@@ -5,6 +5,7 @@ import Input from "@/components/ui/Input.vue";
 import Select from "@/components/ui/Select.vue";
 import Switch from "@/components/ui/Switch.vue";
 import HomeMetricsCard from "@/components/HomeMetricsCard.vue";
+import CursorAccountCard from "@/components/CursorAccountCard.vue";
 import { useMessage } from "@/composables/useMessage";
 import { showModal } from "@/composables/useModal";
 import {
@@ -109,7 +110,7 @@ async function handleSaveOutboundProxy() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 p-4 pt-0 text-[#e5e5e5]">
+  <div class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto scroll-shadow-bottom p-4 pt-0 text-[#e5e5e5]">
     <HomeMetricsCard
       :metrics="appState.homeMetrics"
       :loading="appState.homeMetricsLoading"
@@ -141,7 +142,7 @@ async function handleSaveOutboundProxy() {
 
         <Switch
           label="直连模式"
-          description="开启后，Cursor将直接接通官方，请勿开启"
+          description="开启后，仅将带合法上游地址的 Cursor 请求转发到官方服务"
           enabled-text="当前为直连模式"
           disabled-text="当前为本地服务模式"
           :enabled="directModeEnabled"
@@ -217,6 +218,8 @@ async function handleSaveOutboundProxy() {
         </div>
       </div>
     </Card>
+
+    <CursorAccountCard />
 
     <Card>
       <div class="flex items-center justify-between gap-4">

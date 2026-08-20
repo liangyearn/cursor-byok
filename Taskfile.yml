@@ -11,7 +11,8 @@ vars:
   BIN_DIR: "bin"
   APP_VERSION:
     sh: 'go run ./scripts/release version -config ./build/config.yml'
-  RELEASE_REPO: "leookun/cursor-byok"
+  # lyh用cursor修改 2026-08-19：发布任务必须与应用内更新器使用同一个 fork 仓库。
+  RELEASE_REPO: "helenwilkerson/cursor-byok"
   RELEASE_BASE_NAME: "cursor-byok"
   RELEASE_SOURCE_PATH: "release-notes.md"
   RELEASE_DIR: '{{.BIN_DIR}}/release/{{.APP_VERSION}}'

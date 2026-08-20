@@ -6,10 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"io/fs"
+	"os"
 	goruntime "runtime"
+	"strconv"
 	"strings"
 	"time"
 
+	"cursor/internal/appdata"
 	"cursor/internal/autostart"
 	serverconfig "cursor/internal/backend/server/config"
 	"cursor/internal/buildinfo"
@@ -21,12 +24,16 @@ import (
 	"cursor/internal/logger"
 	"cursor/internal/mitm"
 	"cursor/internal/netproxy"
+	"cursor/internal/updater"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-const appName = "Cursor助手"
+const (
+	appName                  = "Cursor助手"
+	disableWebViewSandboxEnv = "CURSOR_BYOK_DISABLE_WEBVIEW_SANDBOX"
+)
 
 // EmbeddedResources 定义了当前模块中的 EmbeddedResources 类型。
 type EmbeddedResources struct {
@@ -43,6 +50,10 @@ func init() {
 	application.RegisterEvent[bridge.ProxyState]("proxy:state")
 	application.RegisterEvent[bridge.UserConfig]("user-config:changed")
 	application.RegisterEvent[bridge.ModelAdapterTestResultsPayload]("model-adapter-test:updated")
+	application.RegisterEvent[updater.StatePayload](updater.EventState)
+	application.RegisterEvent[updater.ProgressPayload](updater.EventProgress)
+	application.RegisterEvent[updater.ReadyPayload](updater.EventReady)
+	application.RegisterEvent[updater.ErrorPayload](updater.EventError)
 }
 
 // Run 初始化桌面应用、注册桥接服务并创建主窗口与系统托盘。
@@ -51,26 +62,28 @@ func Run(resources EmbeddedResources) error {
 	logger.Init()
 	netproxy.InstallDefaultTransport()
 
-	embeddedCACertPEM := certs.EmbeddedCACertPEM()
-	logEmbeddedCAInfo(embeddedCACertPEM)
-
-	certManager, err := certs.NewEmbeddedManager()
+	if err := appdata.EnsureAssistantHome(); err != nil {
+		return err
+	}
+	certManager, caCertPEM, err := certs.LoadOrCreateManager(appdata.CACertFilePath(), appdata.CAKeyFilePath())
 	if err != nil {
 		return err
 	}
+	logCAInfo(caCertPEM)
 
 	defaultBackendBaseURL := "http://" + serverconfig.DefaultBackendListenAddr
 	proxyServer, err := mitm.NewProxyServer(serverconfig.DefaultProxyListenAddr, defaultBackendBaseURL, "", "", certManager)
 	if err != nil {
 		return err
 	}
-	proxyService := bridge.NewProxyService(proxyServer, certManager, embeddedCACertPEM)
+	proxyService := bridge.NewProxyService(proxyServer, certManager, caCertPEM)
 	metricsService := bridge.NewMetricsService()
 	windowService := bridge.NewWindowService()
 	// lyh用cursor修改 2026-08-01：独立注册开机启动桥接服务，保持系统设置与代理业务解耦。
 	startupService := bridge.NewStartupService()
 
 	var mainWindow *application.WebviewWindow
+	var updateManager *updater.Manager
 
 	app := application.New(application.Options{
 		Name:        appName,
@@ -85,11 +98,17 @@ func Run(resources EmbeddedResources) error {
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(resources.Assets),
 		},
+		Windows: application.WindowsOptions{
+			AdditionalBrowserArgs: windowsAdditionalBrowserArgs(),
+		},
 		Mac: application.MacOptions{
 			ActivationPolicy: application.ActivationPolicyAccessory,
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 		OnShutdown: func() {
+			if updateManager != nil {
+				updateManager.Shutdown()
+			}
 			proxyService.ShutdownForQuit()
 		},
 		SingleInstance: &application.SingleInstanceOptions{
@@ -101,11 +120,13 @@ func Run(resources EmbeddedResources) error {
 		},
 	})
 
+	updateManager = updater.NewManager(app)
 	windowService.SetApp(app)
+	windowService.SetUpdater(updateManager)
 
 	mainWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: appName,
-		// lyh用cursor修改 2026-03-14：缩小主窗口初始尺寸并同步最小宽度约束，确保启动时实际按 635×700 展示。
+		// lyh用cursor修改 2026-03-14：缩小主窗口初始尺寸并同步最小尺寸约束，确保启动时实际按 635×820 展示。
 		Width:         635,
 		Height:        820,
 		MinWidth:      635,
@@ -165,10 +186,8 @@ func Run(resources EmbeddedResources) error {
 	menu.AddSeparator()
 	startItem := menu.Add("启动服务")
 	stopItem := menu.Add("停止服务")
-	updateItem := menu.Add("查看上游更新").OnClick(func(ctx *application.Context) {
-		if err := windowService.OpenUpstreamReleases(); err != nil {
-			logger.Errorf("打开上游发布页失败: %v", err)
-		}
+	updateItem := menu.Add("检查更新").OnClick(func(ctx *application.Context) {
+		updateManager.CheckNow(true)
 	})
 	menu.AddSeparator()
 	showItem := menu.Add("显示窗口").OnClick(func(ctx *application.Context) {
@@ -213,28 +232,28 @@ func Run(resources EmbeddedResources) error {
 		if locale == "en-US" {
 			startItem.SetLabel("Start Service")
 			stopItem.SetLabel("Stop Service")
-			updateItem.SetLabel("View Upstream Releases")
+			updateItem.SetLabel("Check for Updates")
 			showItem.SetLabel("Show Window")
 			hideItem.SetLabel("Hide Window")
 			quitItem.SetLabel("Exit")
 		} else if locale == "ja-JP" {
 			startItem.SetLabel("サービス起動")
 			stopItem.SetLabel("サービス停止")
-			updateItem.SetLabel("アップストリームのリリースを表示")
+			updateItem.SetLabel("アップデートを確認")
 			showItem.SetLabel("ウィンドウを表示")
 			hideItem.SetLabel("ウィンドウを非表示")
 			quitItem.SetLabel("終了")
 		} else if locale == "ru-RU" {
 			startItem.SetLabel("Запустить сервис")
 			stopItem.SetLabel("Остановить сервис")
-			updateItem.SetLabel("Открыть релизы upstream")
+			updateItem.SetLabel("Проверить обновления")
 			showItem.SetLabel("Показать окно")
 			hideItem.SetLabel("Скрыть окно")
 			quitItem.SetLabel("Выход")
 		} else {
 			startItem.SetLabel("启动服务")
 			stopItem.SetLabel("停止服务")
-			updateItem.SetLabel("查看上游更新")
+			updateItem.SetLabel("检查更新")
 			showItem.SetLabel("显示窗口")
 			hideItem.SetLabel("隐藏窗口")
 			quitItem.SetLabel("退出")
@@ -263,6 +282,7 @@ func Run(resources EmbeddedResources) error {
 	})
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
 		logger.Infof("应用版本：v%s", buildinfo.CurrentVersion())
+		updateManager.Start()
 		go func() {
 			logger.Infof("application started, begin auto start service in background")
 			if _, err := proxyService.StartProxy(); err != nil {
@@ -304,20 +324,28 @@ func Run(resources EmbeddedResources) error {
 	return app.Run()
 }
 
-// logEmbeddedCAInfo 用于处理与 logEmbeddedCAInfo 相关的逻辑。
-func logEmbeddedCAInfo(certPEM []byte) {
+func windowsAdditionalBrowserArgs() []string {
+	disableSandbox, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(disableWebViewSandboxEnv)))
+	if err != nil || !disableSandbox {
+		return nil
+	}
+	return []string{"--no-sandbox"}
+}
+
+// logCAInfo 记录当前安装专属 CA 的公开信息。
+func logCAInfo(certPEM []byte) {
 	if len(certPEM) == 0 {
-		logger.Errorf("embedded CA is empty")
+		logger.Errorf("installation CA is empty")
 		return
 	}
-	cert, err := parseEmbeddedCert(certPEM)
+	cert, err := parseCert(certPEM)
 	if err != nil {
-		logger.Errorf("parse embedded CA failed: %v", err)
+		logger.Errorf("parse installation CA failed: %v", err)
 		return
 	}
 	sum := sha256.Sum256(cert.Raw)
 	logger.Infof(
-		"embedded CA loaded: sha256=%s subject=%s valid=%s~%s",
+		"installation CA loaded: sha256=%s subject=%s valid=%s~%s",
 		strings.ToUpper(hex.EncodeToString(sum[:])),
 		cert.Subject.String(),
 		cert.NotBefore.Format(time.RFC3339),
@@ -325,8 +353,8 @@ func logEmbeddedCAInfo(certPEM []byte) {
 	)
 }
 
-// parseEmbeddedCert 用于处理与 parseEmbeddedCert 相关的逻辑。
-func parseEmbeddedCert(data []byte) (*x509.Certificate, error) {
+// parseCert 解析 DER 或 PEM 编码的证书。
+func parseCert(data []byte) (*x509.Certificate, error) {
 	if block, _ := pem.Decode(data); block != nil {
 		return x509.ParseCertificate(block.Bytes)
 	}

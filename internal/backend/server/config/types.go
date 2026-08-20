@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,9 +17,19 @@ const (
 	DefaultBackendListenAddr                = "127.0.0.1:18090"
 	DefaultProxyListenAddr                  = "127.0.0.1:18080"
 	DefaultFrontendBaseURL                  = "http://127.0.0.1"
+	DefaultRoutingMode                      = "local"
 	DefaultProviderStreamIdleTimeoutSeconds = 240
 	MinProviderStreamIdleTimeoutSeconds     = 30
+	DefaultOutboundProxyMode                = "configured"
+	DefaultOutboundProxyURL                 = "http://127.0.0.1:19808"
 )
+
+// lyh用cursor修改 2026-08-19：在上游新配置结构中保留 fork 的应用内出口代理，避免同步后请求绕过用户指定代理。
+type OutboundProxyConfig struct {
+	Enabled bool   `json:"enabled" yaml:"enabled"`
+	Mode    string `json:"mode" yaml:"mode"`
+	URL     string `json:"url" yaml:"url"`
+}
 
 type ModelAdapterConfig struct {
 	ID                          string `json:"id,omitempty" yaml:"-"`
@@ -44,6 +55,12 @@ type ModelAdapterConfig struct {
 	ThinkingBudgetTokens        int    `json:"thinkingBudgetTokens" yaml:"thinkingBudgetTokens"`
 }
 
+type RoutingConfig struct {
+	Mode string `json:"mode" yaml:"mode"`
+	// Strategy 仅用于读取早期配置，标准化后不会持久化。
+	Strategy string `json:"-" yaml:"strategy,omitempty"`
+}
+
 type HomeMetricsConfig struct {
 	IncludeCacheWriteInHitRate bool `json:"includeCacheWriteInHitRate" yaml:"includeCacheWriteInHitRate"`
 }
@@ -54,8 +71,11 @@ type Config struct {
 	BackendListenAddr         string               `json:"backendListenAddr" yaml:"backendListenAddr"`
 	ProxyListenAddr           string               `json:"proxyListenAddr" yaml:"proxyListenAddr"`
 	ModelAdapters             []ModelAdapterConfig `json:"modelAdapters" yaml:"modelAdapters"`
-	HomeMetrics               HomeMetricsConfig    `json:"homeMetrics" yaml:"homeMetrics"`
-	LastAgentModelHash        string               `json:"lastAgentModelHash" yaml:"lastAgentModelHash"`
+	Routing                   RoutingConfig        `json:"routing" yaml:"routing"`
+	// lyh用cursor修改 2026-08-19：出口代理属于完整用户配置，随上游配置导入导出统一持久化。
+	OutboundProxy      OutboundProxyConfig `json:"outboundProxy" yaml:"outboundProxy"`
+	HomeMetrics        HomeMetricsConfig   `json:"homeMetrics" yaml:"homeMetrics"`
+	LastAgentModelHash string              `json:"lastAgentModelHash" yaml:"lastAgentModelHash"`
 }
 
 func DefaultConfig() Config {
@@ -65,6 +85,14 @@ func DefaultConfig() Config {
 		BackendListenAddr:         DefaultBackendListenAddr,
 		ProxyListenAddr:           DefaultProxyListenAddr,
 		ModelAdapters:             []ModelAdapterConfig{},
+		Routing: RoutingConfig{
+			Mode: DefaultRoutingMode,
+		},
+		OutboundProxy: OutboundProxyConfig{
+			Enabled: true,
+			Mode:    DefaultOutboundProxyMode,
+			URL:     DefaultOutboundProxyURL,
+		},
 	}
 }
 
@@ -84,12 +112,50 @@ func NormalizeConfig(input Config) (Config, error) {
 	output.ProxyListenAddr = proxyListenAddr
 	output.HomeMetrics.IncludeCacheWriteInHitRate = input.HomeMetrics.IncludeCacheWriteInHitRate
 	output.LastAgentModelHash = strings.TrimSpace(input.LastAgentModelHash)
+	output.Routing.Mode = normalizeRoutingMode(input.Routing.Mode)
+	if output.Routing.Mode == "" {
+		return Config{}, errors.New("routing mode 仅支持 local 或 upstream")
+	}
+	outboundProxy, err := NormalizeOutboundProxyConfig(input.OutboundProxy)
+	if err != nil {
+		return Config{}, err
+	}
+	output.OutboundProxy = outboundProxy
 	adapters, err := NormalizeModelAdapterConfigs(input.ModelAdapters)
 	if err != nil {
 		return Config{}, err
 	}
 	output.ModelAdapters = adapters
 	return output, nil
+}
+
+// NormalizeOutboundProxyConfig 将出口策略收敛为 configured、system 或 direct。
+func NormalizeOutboundProxyConfig(input OutboundProxyConfig) (OutboundProxyConfig, error) {
+	mode := normalizeOutboundProxyMode(input.Mode)
+	if mode == "" {
+		return OutboundProxyConfig{}, errors.New("外网出口代理 mode 仅支持 configured、system 或 direct")
+	}
+
+	if mode != "configured" {
+		return OutboundProxyConfig{Mode: mode}, nil
+	}
+	proxyURL := strings.TrimSpace(input.URL)
+	if proxyURL == "" {
+		proxyURL = DefaultOutboundProxyURL
+	}
+	normalizedURL, err := normalizeOutboundProxyURL(proxyURL)
+	if err != nil {
+		return OutboundProxyConfig{}, err
+	}
+	enabled := input.Enabled
+	if strings.TrimSpace(input.Mode) == "" && strings.TrimSpace(input.URL) == "" {
+		enabled = true
+	}
+	return OutboundProxyConfig{
+		Enabled: enabled,
+		Mode:    mode,
+		URL:     normalizedURL,
+	}, nil
 }
 
 func NormalizeModelAdapterConfigs(input []ModelAdapterConfig) ([]ModelAdapterConfig, error) {
@@ -292,4 +358,42 @@ func normalizeModelAdapterType(value string) string {
 	default:
 		return ""
 	}
+}
+
+func normalizeRoutingMode(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "local":
+		return "local"
+	case "upstream":
+		return "upstream"
+	default:
+		return ""
+	}
+}
+
+func normalizeOutboundProxyMode(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "configured":
+		return "configured"
+	case "system":
+		return "system"
+	case "direct":
+		return "direct"
+	default:
+		return ""
+	}
+}
+
+func normalizeOutboundProxyURL(value string) (string, error) {
+	parsed, err := url.Parse(strings.TrimSpace(value))
+	if err != nil || parsed == nil || strings.TrimSpace(parsed.Host) == "" {
+		return "", errors.New("外网出口代理 url 必须是合法代理地址")
+	}
+	switch scheme := strings.ToLower(strings.TrimSpace(parsed.Scheme)); scheme {
+	case "http", "https", "socks5":
+		parsed.Scheme = scheme
+	default:
+		return "", errors.New("外网出口代理 url 仅支持 http、https 或 socks5")
+	}
+	return strings.TrimRight(parsed.String(), "/"), nil
 }

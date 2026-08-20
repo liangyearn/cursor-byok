@@ -80,3 +80,46 @@ func TestNormalizeModelAdapterConfigsRejectsUnknownReasoningEffort(t *testing.T)
 		t.Fatal("NormalizeModelAdapterConfigs should reject an unknown reasoning effort")
 	}
 }
+
+func TestNormalizeOutboundProxyConfig(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   OutboundProxyConfig
+		want    OutboundProxyConfig
+		wantErr bool
+	}{
+		{
+			name:  "default configured proxy",
+			input: OutboundProxyConfig{},
+			want:  OutboundProxyConfig{Enabled: true, Mode: "configured", URL: DefaultOutboundProxyURL},
+		},
+		{
+			name:  "system ignores configured fields",
+			input: OutboundProxyConfig{Enabled: true, Mode: "system", URL: "http://127.0.0.1:1234"},
+			want:  OutboundProxyConfig{Mode: "system"},
+		},
+		{
+			name:    "reject unsupported scheme",
+			input:   OutboundProxyConfig{Enabled: true, Mode: "configured", URL: "ftp://127.0.0.1:21"},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := NormalizeOutboundProxyConfig(test.input)
+			if test.wantErr {
+				if err == nil {
+					t.Fatal("NormalizeOutboundProxyConfig() should return an error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("NormalizeOutboundProxyConfig() error = %v", err)
+			}
+			if got != test.want {
+				t.Fatalf("NormalizeOutboundProxyConfig() = %#v, want %#v", got, test.want)
+			}
+		})
+	}
+}

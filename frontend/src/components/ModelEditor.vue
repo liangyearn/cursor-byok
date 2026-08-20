@@ -6,6 +6,8 @@ import ModelAdapterTestCard from "@/components/ModelAdapterTestCard.vue";
 import Select from "@/components/ui/Select.vue";
 import Tooltip from "@/components/ui/Tooltip.vue";
 import { useMessage } from "@/composables/useMessage";
+import { useModelClipboardTransfer } from "@/composables/useModelClipboardTransfer";
+import { mergeImportedModelDraft } from "@/utils/modelClipboardDraft";
 import {
   ANTHROPIC_THINKING_EFFORT_DEFAULT,
   appState,
@@ -62,8 +64,13 @@ const props = defineProps({
   adapter: { type: Object, default: () => createEmptyModelAdapter() },
 });
 
-const emit = defineEmits(["close", "saved"]);
+const emit = defineEmits(["close", "saved", "busy-change"]);
 const message = useMessage();
+const {
+  modelClipboardBusy,
+  exportModelToClipboard,
+  importModelFromClipboard,
+} = useModelClipboardTransfer({ message });
 
 const editorIndex = ref(props.index);
 const draft = reactive(normalizeModelAdapter(props.adapter));
@@ -72,9 +79,11 @@ if (!draft.type) {
 }
 const lastTestAdapterID = ref("");
 const localTestFailure = ref("");
+const testInFlight = ref(false);
 const availableModelIDs = ref(draft.modelID ? [draft.modelID] : []);
 const modelListLoading = ref(false);
 const modelListRequestSeq = ref(0);
+const importedPendingSave = ref(false);
 let modelListDebounceTimer = 0;
 
 function createOptionalPositiveIntegerModel(key) {
@@ -114,6 +123,8 @@ const modelTestResultStale = computed(() =>
   isModelAdapterTestResultStale(selectedTestAdapter.value, activeModelTestResult.value),
 );
 const isCurrentConfigTesting = computed(() => directModelTestResult.value?.status === "running");
+// lyh用cursor修改 2026-08-19：保存并测试期间锁定模态关闭，避免异步请求仍在使用草稿时销毁编辑器。
+const editorBusy = computed(() => appState.configSaving || testInFlight.value || isCurrentConfigTesting.value);
 const modelTestSummary = computed(() => {
   if (localTestFailure.value) {
     return localTestFailure.value;
@@ -219,6 +230,7 @@ async function persistDraft() {
   if (typeof result.index === "number") {
     editorIndex.value = result.index;
   }
+  importedPendingSave.value = false;
   if (result.adapter) {
     Object.assign(draft, normalizeModelAdapter(result.adapter));
   } else {
@@ -244,6 +256,25 @@ function handleCancel() {
   emit("close");
 }
 
+async function handleEncryptedExport() {
+  await exportModelToClipboard(normalizeModelAdapter(draft));
+}
+
+async function handleEncryptedImport() {
+  const imported = await importModelFromClipboard();
+  if (!imported) {
+    return;
+  }
+
+  // lyh用cursor修改 2026-08-19：导入只替换当前草稿，保留编辑目标身份，绝不自动持久化。
+  Object.assign(draft, mergeImportedModelDraft(draft, imported));
+  importedPendingSave.value = true;
+  localTestFailure.value = "";
+  lastTestAdapterID.value = "";
+  modelListRequestSeq.value += 1;
+  availableModelIDs.value = draft.modelID ? [draft.modelID] : [];
+}
+
 function handleModelTypeChange(type) {
   draft.type = type;
   modelListRequestSeq.value += 1;
@@ -258,7 +289,11 @@ function handleModelTypeChange(type) {
 }
 
 async function handleTest() {
+  if (testInFlight.value) {
+    return;
+  }
   localTestFailure.value = "";
+  testInFlight.value = true;
   try {
     const saved = await persistDraft();
     if (!saved.ok || !saved.adapter) {
@@ -275,8 +310,18 @@ async function handleTest() {
       return;
     }
     localTestFailure.value = toUserError(error);
+  } finally {
+    testInFlight.value = false;
   }
 }
+
+watch(
+  editorBusy,
+  (busy) => {
+    emit("busy-change", busy);
+  },
+  { immediate: true },
+);
 
 watch(
   directModelTestResult,
@@ -607,14 +652,35 @@ onBeforeUnmount(() => {
 
       </div>
     </div>
-    <div class="flex shrink-0 items-center justify-end gap-2 px-4 py-3">
-      <Button variant="default" :disabled="appState.configSaving" @click="handleCancel">取消</Button>
-      <Button variant="default" :disabled="isCurrentConfigTesting || appState.configSaving" @click="handleTest">
-        {{ isCurrentConfigTesting ? "测试中..." : "保存并测试" }}
-      </Button>
-      <Button variant="primary" :disabled="appState.configSaving" @click="handleSave">
-        {{ appState.configSaving ? "保存中..." : "保存" }}
-      </Button>
+    <div class="flex shrink-0 items-center justify-between gap-3 px-4 py-3">
+      <div class="center-row min-w-0 flex-wrap justify-start gap-2">
+        <Button
+          variant="default"
+          :disabled="modelClipboardBusy || appState.configSaving"
+          @click="handleEncryptedExport"
+        >
+          {{ modelClipboardBusy ? "处理中..." : "加密导出到剪贴板" }}
+        </Button>
+        <Button
+          variant="default"
+          :disabled="modelClipboardBusy || appState.configSaving"
+          @click="handleEncryptedImport"
+        >
+          从剪贴板导入
+        </Button>
+        <span v-if="importedPendingSave" class="text-xs text-[#fbbf24]">
+          已导入待保存
+        </span>
+      </div>
+      <div class="center-row shrink-0 gap-2">
+        <Button variant="default" :disabled="modelClipboardBusy || appState.configSaving" @click="handleCancel">取消</Button>
+        <Button variant="default" :disabled="modelClipboardBusy || isCurrentConfigTesting || appState.configSaving" @click="handleTest">
+          {{ isCurrentConfigTesting ? "测试中..." : "保存并测试" }}
+        </Button>
+        <Button variant="primary" :disabled="modelClipboardBusy || appState.configSaving" @click="handleSave">
+          {{ appState.configSaving ? "保存中..." : "保存" }}
+        </Button>
+      </div>
     </div>
   </div>
 </template>

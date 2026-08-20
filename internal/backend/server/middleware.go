@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	serverconfig "cursor/internal/backend/server/config"
 	legacyruntime "cursor/internal/runtime"
 )
 
@@ -31,6 +32,20 @@ func ServerContext() Middleware {
 			}
 			if err := ctx.ParseUpstreamURL(); err != nil {
 				return err
+			}
+			return next(ctx)
+		}
+	}
+}
+
+func RoutePolicy(configs *serverconfig.Manager, direct HandlerFunc) Middleware {
+	return func(next HandlerFunc) HandlerFunc {
+		return func(ctx *Context) error {
+			if ctx != nil && ctx.UpstreamURL != nil && configs.RouteMode(true) == "upstream" {
+				if direct == nil {
+					return errors.New("upstream route action is not configured")
+				}
+				return direct(ctx)
 			}
 			return next(ctx)
 		}

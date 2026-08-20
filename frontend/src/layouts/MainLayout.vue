@@ -19,8 +19,8 @@ const showIcon = computed(() => route.meta.showIcon !== false);
 const title = computed(() => route.meta.title ?? "Cursor助手｜永久免费｜自定义API");
 const directlyClose = computed(() => route.meta.directlyClose === true);
 const showFooter = computed(() => route.path === "/");
-const AUTHOR_REPOSITORY_URL = "https://github.com/leookun/cursor-byok";
-const AUTHOR_LABEL = "@leookun";
+const AUTHOR_REPOSITORY_URL = "https://github.com/helenwilkerson/cursor-byok";
+const AUTHOR_LABEL = "@yhfx186";
 const usageDocsURL = "https://docs.leokun.cn";
 let proxyStateTimer = null;
 const proxyStatePollIntervalMs = 10000;
@@ -28,12 +28,20 @@ const netProxyEndpoint = computed(
   () => appState.netProxyHttps || appState.netProxyHttp || "",
 );
 const proxyBadgeText = computed(() => {
+  if (appState.netProxyUsingConfigured) {
+    return "已使用应用内代理";
+  }
   if (appState.netProxyUsingSystem) {
     return "已识别系统代理";
   }
   return "";
 });
 const proxyBadgeTitle = computed(() => {
+  if (appState.netProxyUsingConfigured) {
+    return appState.netProxyConfiguredURL
+      ? `当前出站请求使用应用内代理：${appState.netProxyConfiguredURL}`
+      : "当前出站请求使用应用内代理";
+  }
   if (appState.netProxyUsingSystem) {
     return netProxyEndpoint.value
       ? `当前出站请求使用系统代理：${netProxyEndpoint.value}`

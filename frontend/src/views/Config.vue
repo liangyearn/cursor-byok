@@ -11,12 +11,9 @@ import {
   openModelConfigWindow,
   persistUserConfig,
   reloadUserConfig,
-  ROUTE_MODE_OPTIONS,
   toUserError,
 } from "@/state/appState";
 import { onMounted } from "vue";
-
-const routeModeOptions = ROUTE_MODE_OPTIONS;
 
 async function showActionError(title, error) {
   await showModal({
@@ -63,24 +60,6 @@ onMounted(async () => {
         <Button variant="primary" :disabled="appState.configSaving" @click="handleSaveConfig">
           {{ appState.configSaving ? "保存中..." : "保存配置" }}
         </Button>
-      </div>
-    </Card>
-
-    <Card>
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base font-medium text-white">运行模式</h2>
-          <div class="text-sm text-[#a3a3a3]">
-            控制白名单主链路请求走本地服务，还是回到原始 Cursor 上游地址
-          </div>
-        </div>
-        <div class="w-[220px] max-w-full">
-          <Select
-            v-model="appState.routingMode"
-            :options="routeModeOptions"
-            placeholder="选择模式"
-          />
-        </div>
       </div>
     </Card>
 

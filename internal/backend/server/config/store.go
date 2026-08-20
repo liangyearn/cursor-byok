@@ -136,10 +136,14 @@ func (store *Store) saveLocked(normalized Config) error {
 }
 
 func shouldPersistNormalizedConfig(raw []byte, current Config, normalized Config) bool {
-	if yamlHasKey(raw, "routing") {
+	if !yamlHasKey(raw, "routing") || current.Routing != normalized.Routing {
 		return true
 	}
 	if !yamlHasKey(raw, "backendListenAddr") || !yamlHasKey(raw, "proxyListenAddr") {
+		return true
+	}
+	// lyh用cursor修改 2026-08-19：旧配置缺少出口代理时写回默认值，避免每次加载都依赖内存补齐。
+	if !yamlHasKey(raw, "outboundProxy") || current.OutboundProxy != normalized.OutboundProxy {
 		return true
 	}
 	if current.BackendListenAddr != normalized.BackendListenAddr || current.ProxyListenAddr != normalized.ProxyListenAddr {

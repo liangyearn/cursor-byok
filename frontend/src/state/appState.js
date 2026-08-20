@@ -1,6 +1,5 @@
 import { computed, reactive, watchSyncEffect } from "vue";
 import { Events } from "@wailsio/runtime";
-import dayjs from "dayjs";
 import {
   checkForUpdates,
   exportUserConfig as exportUserConfigFile,
@@ -9,12 +8,14 @@ import {
   getModelAdapterTestResults,
   installReadyUpdate,
   getProxyState,
+  getStartupStatus,
   importUserConfig as importUserConfigFile,
   openConfigWindow as openConfig,
   loadUserConfig,
   openLogsDirectory,
   openModelConfig,
   saveUserConfig,
+  setStartupEnabled as persistStartupEnabled,
   startProxyService,
   stopProxyService,
   testModelAdapter,
@@ -41,6 +42,9 @@ export const EXTRA_PARAMS_DEFAULT_JSON = `{
 export const CUSTOM_HEADERS_DEFAULT_JSON = `{
 }`;
 const SUPPORTED_OPENAI_ENDPOINTS = new Set([OPENAI_ENDPOINT_RESPONSES, OPENAI_ENDPOINT_CHAT_COMPLETIONS, OPENAI_ENDPOINT_CUSTOM]);
+const SUPPORTED_ROUTE_MODES = new Set(["local", "upstream"]);
+const SUPPORTED_OUTBOUND_PROXY_MODES = new Set(["configured", "system", "direct"]);
+const DEFAULT_OUTBOUND_PROXY_URL = "http://127.0.0.1:19808";
 const PROXY_STATE_EVENT = "proxy:state";
 const USER_CONFIG_CHANGED_EVENT = "user-config:changed";
 const UPDATE_STATE_EVENT = "update:state";
@@ -113,16 +117,34 @@ function asNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function normalizeRouteMode(value) {
+  const mode = asString(value).toLowerCase();
+  return SUPPORTED_ROUTE_MODES.has(mode) ? mode : "local";
+}
+
+// lyh用cursor修改 2026-08-19：前端只归一化代理表单结构，最终合法性仍由 Go 配置层统一校验。
+function normalizeOutboundProxy(source) {
+  const raw = source && typeof source === "object" ? source : {};
+  const candidateMode = asString(raw.mode).toLowerCase();
+  const mode = SUPPORTED_OUTBOUND_PROXY_MODES.has(candidateMode) ? candidateMode : "configured";
+  return {
+    enabled: mode === "configured" ? asBoolean(raw.enabled, true) : false,
+    mode,
+    url: mode === "configured" ? (asString(raw.url) || DEFAULT_OUTBOUND_PROXY_URL) : "",
+  };
+}
+
 function formatReleaseDate(value) {
   const text = asString(value);
   if (!text) {
     return "未知";
   }
-  const parsed = dayjs(text);
-  if (!parsed.isValid()) {
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) {
     return text;
   }
-  return parsed.format("YYYY-MM-DD HH:mm");
+  const pad = (part) => String(part).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())} ${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
 }
 
 function normalizeBaseURL(value) {
@@ -544,6 +566,14 @@ function normalizeConfig(source) {
     backendListenAddr: asString(raw.configBackendListenAddr) || asString(raw.backendListenAddr),
     proxyListenAddr: asString(raw.configProxyListenAddr) || asString(raw.proxyListenAddr),
     modelAdapters: normalizeModelAdapters(raw.modelAdapters),
+    routing: {
+      mode: normalizeRouteMode(raw.routing?.mode ?? raw.routingMode),
+    },
+    outboundProxy: normalizeOutboundProxy(raw.outboundProxy ?? {
+      enabled: raw.outboundProxyEnabled,
+      mode: raw.outboundProxyMode,
+      url: raw.outboundProxyURL,
+    }),
     homeMetrics: {
       includeCacheWriteInHitRate: asBoolean(homeMetrics.includeCacheWriteInHitRate),
     },
@@ -586,6 +616,8 @@ function buildConfigPayload(source = appState) {
     backendListenAddr: normalized.backendListenAddr,
     proxyListenAddr: normalized.proxyListenAddr,
     modelAdapters: normalized.modelAdapters.map(({ id, ...adapter }) => adapter),
+    routing: normalized.routing,
+    outboundProxy: normalized.outboundProxy,
     homeMetrics: normalized.homeMetrics,
     lastAgentModelHash: normalized.lastAgentModelHash,
   };
@@ -600,6 +632,10 @@ function applyConfigToState(config, { modelAdaptersOnly = false } = {}) {
   appState.modelAdapters = normalized.modelAdapters;
   appState.configBackendListenAddr = normalized.backendListenAddr;
   appState.configProxyListenAddr = normalized.proxyListenAddr;
+  appState.routingMode = normalized.routing.mode;
+  appState.outboundProxyEnabled = normalized.outboundProxy.enabled;
+  appState.outboundProxyMode = normalized.outboundProxy.mode;
+  appState.outboundProxyURL = normalized.outboundProxy.url;
   appState.includeCacheWriteInHitRate = normalized.homeMetrics.includeCacheWriteInHitRate;
   return normalized;
 }
@@ -654,8 +690,10 @@ function applyProxyState(raw) {
   appState.netProxyActive = asBoolean(state.netProxyActive);
   appState.netProxyUsingSystem = asBoolean(state.netProxyUsingSystem);
   appState.netProxyUsingEnv = asBoolean(state.netProxyUsingEnv);
+  appState.netProxyUsingConfigured = asBoolean(state.netProxyUsingConfigured);
   appState.netProxyHttp = asString(state.netProxyHttp);
   appState.netProxyHttps = asString(state.netProxyHttps);
+  appState.netProxyConfiguredURL = asString(state.netProxyConfiguredURL);
   appState.netProxyPacIgnored = asBoolean(state.netProxyPacIgnored);
   appState.netProxyDescription = asString(state.netProxyDescription);
 }
@@ -817,6 +855,16 @@ function extractErrorMessage(error) {
   return "";
 }
 
+function applyStartupStatus(source) {
+  const raw = source && typeof source === "object" ? source : {};
+  appState.startupSupported = asBoolean(raw.supported);
+  appState.startupEnabled = appState.startupSupported && asBoolean(raw.enabled);
+  return {
+    supported: appState.startupSupported,
+    enabled: appState.startupEnabled,
+  };
+}
+
 const cachedState = loadCachedState();
 const cachedConfig = normalizeConfig(cachedState);
 
@@ -826,7 +874,15 @@ export const appState = reactive({
   modelAdapterTestResults: {},
   configBackendListenAddr: cachedConfig.backendListenAddr,
   configProxyListenAddr: cachedConfig.proxyListenAddr,
+  routingMode: cachedConfig.routing.mode,
+  outboundProxyEnabled: cachedConfig.outboundProxy.enabled,
+  outboundProxyMode: cachedConfig.outboundProxy.mode,
+  outboundProxyURL: cachedConfig.outboundProxy.url,
   includeCacheWriteInHitRate: cachedConfig.homeMetrics.includeCacheWriteInHitRate,
+
+  startupSupported: false,
+  startupEnabled: false,
+  startupBusy: false,
 
   serviceRunning: asBoolean(cachedState.serviceRunning),
   backendRunning: asBoolean(cachedState.backendRunning),
@@ -841,8 +897,10 @@ export const appState = reactive({
   netProxyActive: asBoolean(cachedState.netProxyActive),
   netProxyUsingSystem: asBoolean(cachedState.netProxyUsingSystem),
   netProxyUsingEnv: asBoolean(cachedState.netProxyUsingEnv),
+  netProxyUsingConfigured: asBoolean(cachedState.netProxyUsingConfigured),
   netProxyHttp: asString(cachedState.netProxyHttp),
   netProxyHttps: asString(cachedState.netProxyHttps),
+  netProxyConfiguredURL: asString(cachedState.netProxyConfiguredURL),
   netProxyPacIgnored: asBoolean(cachedState.netProxyPacIgnored),
   netProxyDescription: asString(cachedState.netProxyDescription),
 
@@ -888,8 +946,10 @@ watchSyncEffect(() => {
         netProxyActive: appState.netProxyActive,
         netProxyUsingSystem: appState.netProxyUsingSystem,
         netProxyUsingEnv: appState.netProxyUsingEnv,
+        netProxyUsingConfigured: appState.netProxyUsingConfigured,
         netProxyHttp: appState.netProxyHttp,
         netProxyHttps: appState.netProxyHttps,
+        netProxyConfiguredURL: appState.netProxyConfiguredURL,
         netProxyPacIgnored: appState.netProxyPacIgnored,
         netProxyDescription: appState.netProxyDescription,
       }),
@@ -1163,6 +1223,22 @@ export async function saveIncludeCacheWriteInHitRate(value) {
   return result;
 }
 
+export async function saveRoutingMode(mode) {
+  const currentConfig = await loadPersistedUserConfig();
+  return persistConfigPayload({
+    ...currentConfig,
+    routing: { mode: normalizeRouteMode(mode) },
+  });
+}
+
+export async function saveOutboundProxyConfig(source) {
+  const currentConfig = await loadPersistedUserConfig();
+  return persistConfigPayload({
+    ...currentConfig,
+    outboundProxy: normalizeOutboundProxy(source),
+  });
+}
+
 export async function reloadUserConfig(options = {}) {
   const config = await loadPersistedUserConfig();
   applyConfigToState(config, options);
@@ -1391,6 +1467,30 @@ export async function toggleService() {
   return startService();
 }
 
+export async function syncStartupStatus() {
+  appState.startupBusy = true;
+  try {
+    return applyStartupStatus(await getStartupStatus());
+  } finally {
+    appState.startupBusy = false;
+  }
+}
+
+export async function updateStartupEnabled(enabled) {
+  if (appState.startupBusy) {
+    return { ok: false, error: "开机启动状态更新中，请稍后再试" };
+  }
+  appState.startupBusy = true;
+  try {
+    applyStartupStatus(await persistStartupEnabled(asBoolean(enabled)));
+    return { ok: true, error: "" };
+  } catch (error) {
+    return { ok: false, error: toUserError(error) };
+  } finally {
+    appState.startupBusy = false;
+  }
+}
+
 export async function openLocalLogsDirectory() {
   await openLogsDirectory();
 }
@@ -1449,5 +1549,6 @@ export async function bootstrapAppState() {
     appState.appVersion = "";
   }
   await syncServiceState().catch(() => {});
+  await syncStartupStatus().catch(() => {});
   await syncHomeMetrics().catch(() => {});
 }

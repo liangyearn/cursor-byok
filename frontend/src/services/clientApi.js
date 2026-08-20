@@ -8,18 +8,12 @@ import {
   StartProxy,
   StopProxy,
 } from "@bindings/cursor/internal/bridge/proxyservice.js";
-import {
-  GetAdRuntime,
-  OpenExternalURL as OpenAdExternalURL,
-} from "@bindings/cursor/internal/bridge/adservice.js";
 import { GetHomeMetricsSummary } from "@bindings/cursor/internal/bridge/metricsservice.js";
 import {
   CheckForUpdates,
   GetAppVersion,
-  GetFooterAuthorInfo,
   InstallReadyUpdate,
   OpenConfigWindow,
-  OpenFooterAuthorHome,
   OpenHistoryWindow,
   OpenModelConfigWindow,
 } from "@bindings/cursor/internal/bridge/windowservice.js";
@@ -27,18 +21,56 @@ import { Call } from "@wailsio/runtime";
 
 const API_LOG_PREFIX = "[clientApi]";
 const PROXY_SERVICE_NAME = "cursor/internal/bridge.ProxyService";
+const STARTUP_SERVICE_NAME = "cursor/internal/bridge.StartupService";
+const SENSITIVE_LOG_KEY = /(?:api.?key|authorization|custom.?headers|extra.?params|password|passphrase|secret|ciphertext|adapter.?json)/i;
+
+function sanitizeLogValue(value, key = "", depth = 0, seen = new WeakSet()) {
+  if (SENSITIVE_LOG_KEY.test(key)) {
+    return "[REDACTED]";
+  }
+  if (value === null || value === undefined || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value !== "object" || depth >= 5) {
+    return `[${typeof value}]`;
+  }
+  if (seen.has(value)) {
+    return "[CIRCULAR]";
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.slice(0, 50).map((item) => sanitizeLogValue(item, key, depth + 1, seen));
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([childKey, childValue]) => [
+      childKey,
+      sanitizeLogValue(childValue, childKey, depth + 1, seen),
+    ]),
+  );
+}
+
+function sanitizeLogError(error) {
+  return {
+    name: String(error?.name || "Error"),
+    code: String(error?.code || ""),
+  };
+}
 
 function logSuccess(name, payload, result) {
+  // lyh用cursor修改 2026-08-19：调用日志只记录脱敏副本，不让模型凭据和请求覆盖项进入控制台。
   console.log(`${API_LOG_PREFIX} ${name} response`, {
-    payload,
-    result,
+    payload: sanitizeLogValue(payload),
+    result: sanitizeLogValue(result),
   });
 }
 
 function logError(name, payload, error) {
   console.error(`${API_LOG_PREFIX} ${name} error`, {
-    payload,
-    error,
+    payload: sanitizeLogValue(payload),
+    error: sanitizeLogError(error),
   });
 }
 
@@ -105,12 +137,17 @@ export function getHomeMetricsSummary() {
   return withApiLogging("GetHomeMetricsSummary", undefined, () => GetHomeMetricsSummary());
 }
 
-export function getAdRuntime() {
-  return GetAdRuntime();
+// lyh用cursor修改 2026-08-19：开机启动状态始终从操作系统读取，不使用页面缓存推断。
+export function getStartupStatus() {
+  return withApiLogging("GetStartupStatus", undefined, () =>
+    Call.ByName(`${STARTUP_SERVICE_NAME}.GetStatus`),
+  );
 }
 
-export function openAdExternalURL(url) {
-  return OpenAdExternalURL(url);
+export function setStartupEnabled(enabled) {
+  return withApiLogging("SetStartupEnabled", { enabled }, () =>
+    Call.ByName(`${STARTUP_SERVICE_NAME}.SetEnabled`, enabled),
+  );
 }
 
 export function startProxyService() {
@@ -133,20 +170,12 @@ export function getAppVersion() {
   return withApiLogging("GetAppVersion", undefined, () => GetAppVersion());
 }
 
-export function getFooterAuthorInfo() {
-  return withApiLogging("GetFooterAuthorInfo", undefined, () => GetFooterAuthorInfo());
-}
-
 export function checkForUpdates() {
   return withApiLogging("CheckForUpdates", undefined, () => CheckForUpdates());
 }
 
 export function installReadyUpdate() {
   return withApiLogging("InstallReadyUpdate", undefined, () => InstallReadyUpdate());
-}
-
-export function openFooterAuthorHome() {
-  return withApiLogging("OpenFooterAuthorHome", undefined, () => OpenFooterAuthorHome());
 }
 
 export function openModelConfig() {

@@ -6,14 +6,24 @@ const props = defineProps({
   title: { type: String, default: "提示" },
   content: { type: String, default: "" },
   placeholder: { type: String, default: "" },
+  confirmPlaceholder: { type: String, default: "" },
+  type: { type: String, default: "text" },
+  confirmInput: { type: Boolean, default: false },
+  error: { type: String, default: "" },
   modelValue: { type: String, default: "" },
+  confirmModelValue: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:visible", "update:modelValue", "confirm", "cancel"]);
+const emit = defineEmits([
+  "update:visible",
+  "update:modelValue",
+  "update:confirmModelValue",
+  "confirm",
+  "cancel",
+]);
 
 function handleConfirm() {
   emit("confirm");
-  emit("update:visible", false);
 }
 
 function handleCancel() {
@@ -27,6 +37,10 @@ function onMaskClick() {
 
 function onInput(event) {
   emit("update:modelValue", event?.target?.value ?? "");
+}
+
+function onConfirmInput(event) {
+  emit("update:confirmModelValue", event?.target?.value ?? "");
 }
 
 function onEnter(event) {
@@ -60,12 +74,26 @@ function onEnter(event) {
               <input
                 :value="modelValue"
                 :placeholder="placeholder"
-                type="text"
-                class="mb-5 h-9 w-full rounded-[6px] border border-[#3f3f3f] bg-[#232323] px-3 text-sm text-[#e5e5e5] outline-none focus:border-[#10AD5D]"
+                :type="type"
+                :autocomplete="type === 'password' ? 'new-password' : 'off'"
+                class="h-9 w-full rounded-[6px] border border-[#3f3f3f] bg-[#232323] px-3 text-sm text-[#e5e5e5] outline-none focus:border-[#10AD5D]"
                 @input="onInput"
                 @keydown.enter="onEnter"
               />
-              <div class="flex justify-end gap-2">
+              <input
+                v-if="confirmInput"
+                :value="confirmModelValue"
+                :placeholder="confirmPlaceholder"
+                :type="type"
+                autocomplete="new-password"
+                class="mt-3 h-9 w-full rounded-[6px] border border-[#3f3f3f] bg-[#232323] px-3 text-sm text-[#e5e5e5] outline-none focus:border-[#10AD5D]"
+                @input="onConfirmInput"
+                @keydown.enter="onEnter"
+              />
+              <p v-if="error" class="mt-2 text-xs leading-relaxed text-[#f87171]">
+                {{ error }}
+              </p>
+              <div class="mt-5 flex justify-end gap-2">
                 <Button variant="default" @click="handleCancel">取消</Button>
                 <Button variant="primary" @click="handleConfirm">确定</Button>
               </div>

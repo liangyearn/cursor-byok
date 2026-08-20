@@ -39,6 +39,7 @@ const editorOpen = ref(false);
 const editorIndex = ref(-1);
 const editorAdapter = ref(null);
 const editorSession = ref(0);
+const editorBusy = ref(false);
 const modelGrid = ref(null);
 const sortSaving = ref(false);
 const batchActiveCalls = new Set();
@@ -135,10 +136,14 @@ function openEditor(index = -1) {
 }
 
 function closeEditor() {
-  if (appState.configSaving) {
+  if (appState.configSaving || editorBusy.value) {
     return;
   }
   editorOpen.value = false;
+}
+
+function handleEditorBusyChange(busy) {
+  editorBusy.value = Boolean(busy);
 }
 
 function handleEditorSaved(adapter) {
@@ -498,7 +503,7 @@ onBeforeUnmount(() => {
     :open="editorOpen"
     :title="editorTitle"
     size="xl"
-    :close-disabled="appState.configSaving"
+    :close-disabled="appState.configSaving || editorBusy"
     @close="closeEditor"
   >
     <ModelEditor
@@ -507,6 +512,7 @@ onBeforeUnmount(() => {
       :index="editorIndex"
       :adapter="editorAdapter"
       @saved="handleEditorSaved"
+      @busy-change="handleEditorBusyChange"
       @close="closeEditor"
     />
   </ContentModal>

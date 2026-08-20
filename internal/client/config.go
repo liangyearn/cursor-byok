@@ -5,6 +5,7 @@ import (
 
 	"cursor/internal/appdata"
 	serverconfig "cursor/internal/backend/server/config"
+	"cursor/internal/netproxy"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -82,6 +83,15 @@ func (s *ProxyService) emitUserConfigChanged(cfg UserConfig) {
 		return
 	}
 	app.Event.Emit("user-config:changed", cfg)
+}
+
+// lyh用cursor修改 2026-08-19：后端是出口代理配置的唯一运行时应用入口，避免前端状态与 HTTP Transport 分叉。
+func (s *ProxyService) applyOutboundProxyConfig(cfg UserConfig) {
+	netproxy.SetAppProxyConfig(netproxy.AppProxyConfig{
+		Enabled: cfg.OutboundProxy.Enabled,
+		Mode:    cfg.OutboundProxy.Mode,
+		URL:     cfg.OutboundProxy.URL,
+	})
 }
 
 // resolveUserConfigPath 用于处理与 resolveUserConfigPath 相关的逻辑。

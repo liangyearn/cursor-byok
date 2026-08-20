@@ -18,7 +18,6 @@ const maxConfigTransferFileSize = 4 << 20
 
 type importedUserConfigDocument struct {
 	serverconfig.Config `yaml:",inline"`
-	LegacyRouting       any `yaml:"routing,omitempty"`
 }
 
 // ExportUserConfig 将当前完整配置导出为 YAML 文件。

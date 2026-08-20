@@ -1,5 +1,29 @@
 {
   "entries": {
+    "00ec6f6d484e1362": {
+      "source": "已优先使用",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 104,
+          "column": 13
+        }
+      ]
+    },
+    "0181086a38a32ac6": {
+      "source": "模型配置过大，无法导出",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 252,
+          "column": 21
+        }
+      ]
+    },
     "01aaebc96af187a9": {
       "source": "导入失败",
       "kind": "text",
@@ -17,6 +41,23 @@
         }
       ]
     },
+    "01bafae0f4c511f7": {
+      "source": "密文中的模型配置字段非法",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 177,
+          "column": 25
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 182,
+          "column": 23
+        }
+      ]
+    },
     "02216368edc68816": {
       "source": "无更新说明",
       "kind": "text",
@@ -24,7 +65,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1012,
+          "line": 1072,
           "column": 14
         }
       ]
@@ -36,7 +77,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 381,
+          "line": 426,
           "column": 21
         }
       ]
@@ -48,7 +89,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 445,
+          "line": 467,
           "column": 14
         }
       ]
@@ -60,7 +101,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 485,
+          "line": 490,
           "column": 152
         }
       ]
@@ -72,13 +113,37 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 478,
+          "line": 523,
           "column": 15
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 506,
+          "line": 551,
           "column": 15
+        }
+      ]
+    },
+    "0647728439b5da2e": {
+      "source": "可配置运行模式和模型渠道；运行日志位于",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 56,
+          "column": 48
+        }
+      ]
+    },
+    "07c6175a2ecaca4a": {
+      "source": "输入加密口令",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 43,
+          "column": 18
         }
       ]
     },
@@ -89,7 +154,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 472,
+          "line": 477,
           "column": 19
         }
       ]
@@ -101,7 +166,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 378,
+          "line": 320,
           "column": 19
         }
       ]
@@ -113,7 +178,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 481,
+          "line": 503,
           "column": 14
         }
       ]
@@ -125,25 +190,25 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 88,
+          "line": 96,
           "column": 34
         },
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 88,
+          "line": 96,
           "column": 52
         }
       ]
     },
-    "0d6b7efd5ccefd8a": {
-      "source": "可配置模型渠道；运行日志位于",
+    "0fc845cd0426ae06": {
+      "source": "输入导入口令",
       "kind": "text",
       "placeholders": 0,
       "refs": [
         {
-          "file": "src/views/Config.vue",
-          "line": 50,
-          "column": 48
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 53,
+          "column": 12
         }
       ]
     },
@@ -154,7 +219,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 180,
+          "line": 172,
           "column": 5
         }
       ]
@@ -166,7 +231,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 337,
+          "line": 279,
           "column": 65
         }
       ]
@@ -178,7 +243,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 354,
+          "line": 296,
           "column": 19
         }
       ]
@@ -190,7 +255,19 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 296,
+          "line": 238,
+          "column": 19
+        }
+      ]
+    },
+    "1439a77b5a5a010a": {
+      "source": "外网出口代理已保存",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 107,
           "column": 19
         }
       ]
@@ -202,7 +279,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 153,
+          "line": 164,
           "column": 24
         }
       ]
@@ -214,7 +291,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 301,
+          "line": 323,
           "column": 14
         }
       ]
@@ -226,8 +303,20 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 989,
+          "line": 1049,
           "column": 47
+        }
+      ]
+    },
+    "18f2d560f4d5f7ce": {
+      "source": "该加密模型配置版本暂不受支持",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 225,
+          "column": 21
         }
       ]
     },
@@ -238,7 +327,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 429,
+          "line": 474,
           "column": 15
         }
       ]
@@ -250,7 +339,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 40,
+          "line": 48,
           "column": 9
         }
       ]
@@ -262,8 +351,32 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 65,
+          "line": 66,
           "column": 73
+        }
+      ]
+    },
+    "1c09f66ca19be40e": {
+      "source": "口令至少需要 {0} 个字符",
+      "kind": "template",
+      "placeholders": 1,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 18,
+          "column": 12
+        }
+      ]
+    },
+    "1c12a3b82deceea6": {
+      "source": "两次输入的口令不一致",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 21,
+          "column": 12
         }
       ]
     },
@@ -296,6 +409,18 @@
         }
       ]
     },
+    "1faae94cb92b6ea7": {
+      "source": "密文中的模型配置字段非法或过长",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 171,
+          "column": 25
+        }
+      ]
+    },
     "21296ab18ad9af25": {
       "source": "额外参数 JSON",
       "kind": "text",
@@ -308,12 +433,12 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 527,
+          "line": 572,
           "column": 21
         },
         {
           "file": "src/state/appState.js",
-          "line": 327,
+          "line": 349,
           "column": 36
         }
       ]
@@ -325,12 +450,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 613,
+          "line": 649,
           "column": 32
         },
         {
           "file": "src/state/appState.js",
-          "line": 1136,
+          "line": 1196,
           "column": 21
         }
       ]
@@ -342,18 +467,18 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 35,
-          "column": 21
+          "line": 41,
+          "column": 27
         },
         {
           "file": "src/views/Home.vue",
-          "line": 118,
-          "column": 21
+          "line": 57,
+          "column": 27
         },
         {
           "file": "src/views/Home.vue",
-          "line": 126,
-          "column": 21
+          "line": 65,
+          "column": 27
         }
       ]
     },
@@ -364,7 +489,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 178,
+          "line": 170,
           "column": 5
         }
       ]
@@ -376,7 +501,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 980,
+          "line": 1040,
           "column": 12
         }
       ]
@@ -388,7 +513,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 484,
+          "line": 506,
           "column": 14
         }
       ]
@@ -400,8 +525,20 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 64,
+          "line": 116,
           "column": 48
+        }
+      ]
+    },
+    "2ccff4028dc737d4": {
+      "source": "设置导出口令",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 41,
+          "column": 12
         }
       ]
     },
@@ -422,12 +559,12 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 611,
-          "column": 89
+          "line": 676,
+          "column": 113
         },
         {
           "file": "src/components/ui/InputModal.vue",
-          "line": 69,
+          "line": 97,
           "column": 65
         },
         {
@@ -457,7 +594,7 @@
         },
         {
           "file": "src/state/appState.js",
-          "line": 1054,
+          "line": 1114,
           "column": 12
         }
       ]
@@ -469,8 +606,8 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 28,
-          "column": 11
+          "line": 33,
+          "column": 14
         }
       ]
     },
@@ -481,7 +618,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 488,
+          "line": 493,
           "column": 94
         }
       ]
@@ -493,7 +630,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 603,
+          "line": 648,
           "column": 13
         }
       ]
@@ -505,17 +642,17 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 465,
+          "line": 487,
           "column": 16
         },
         {
           "file": "src/state/appState.js",
-          "line": 471,
+          "line": 493,
           "column": 16
         },
         {
           "file": "src/state/appState.js",
-          "line": 477,
+          "line": 499,
           "column": 16
         }
       ]
@@ -539,7 +676,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 104,
+          "line": 112,
           "column": 21
         }
       ]
@@ -551,7 +688,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 194,
+          "line": 186,
           "column": 5
         }
       ]
@@ -563,7 +700,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 160,
+          "line": 152,
           "column": 5
         }
       ]
@@ -577,6 +714,18 @@
           "file": "src/components/ModelAdapterTestCard.vue",
           "line": 124,
           "column": 60
+        }
+      ]
+    },
+    "35e659ea72fd575a": {
+      "source": "口令错误或密文已损坏",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 294,
+          "column": 18
         }
       ]
     },
@@ -599,7 +748,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1046,
+          "line": 1106,
           "column": 14
         }
       ]
@@ -633,12 +782,24 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 42,
+          "line": 44,
           "column": 12
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 50,
+          "line": 52,
+          "column": 12
+        }
+      ]
+    },
+    "393c739f685d9642": {
+      "source": "已使用应用内代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/layouts/MainLayout.vue",
+          "line": 32,
           "column": 12
         }
       ]
@@ -652,6 +813,23 @@
           "file": "src/components/charts/CacheHitRateChart.vue",
           "line": 76,
           "column": 12
+        }
+      ]
+    },
+    "3a251a2a73d4fcef": {
+      "source": "导入失败：{0}",
+      "kind": "template",
+      "placeholders": 1,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 107,
+          "column": 17
+        },
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 126,
+          "column": 17
         }
       ]
     },
@@ -677,6 +855,23 @@
         }
       ]
     },
+    "3ad3696348e026c5": {
+      "source": "口令不一致",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useInputModal.test.js",
+          "line": 14,
+          "column": 71
+        },
+        {
+          "file": "src/composables/useInputModal.test.js",
+          "line": 21,
+          "column": 39
+        }
+      ]
+    },
     "3af7e5489e61ea51": {
       "source": "刷新中",
       "kind": "text",
@@ -684,8 +879,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 280,
+          "line": 222,
           "column": 21
+        }
+      ]
+    },
+    "3b10404ea3371490": {
+      "source": "该加密模型配置使用了不受支持的密钥派生参数",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 236,
+          "column": 17
         }
       ]
     },
@@ -696,7 +903,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 430,
+          "line": 452,
           "column": 14
         }
       ]
@@ -713,12 +920,12 @@
         },
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 223,
+          "line": 231,
           "column": 11
         },
         {
           "file": "src/views/Config.vue",
-          "line": 63,
+          "line": 115,
           "column": 56
         }
       ]
@@ -742,7 +949,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1010,
+          "line": 1070,
           "column": 5
         }
       ]
@@ -754,7 +961,7 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 77,
+          "line": 129,
           "column": 53
         }
       ]
@@ -771,6 +978,30 @@
         }
       ]
     },
+    "40c889a41ac54037": {
+      "source": "该加密模型配置使用了不受支持的加密算法",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 228,
+          "column": 23
+        }
+      ]
+    },
+    "425ca42fc7e38512": {
+      "source": "模型配置无效，无法导出",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 190,
+          "column": 21
+        }
+      ]
+    },
     "429ea3af443dd80b": {
       "source": "导出配置",
       "kind": "text",
@@ -778,7 +1009,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 411,
+          "line": 416,
           "column": 13
         }
       ]
@@ -795,6 +1026,18 @@
         }
       ]
     },
+    "4347430745e5abea": {
+      "source": "再次输入加密口令",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 44,
+          "column": 25
+        }
+      ]
+    },
     "438bb77c1ecdfab0": {
       "source": "缓存写入：{0} × ${1}/1M = {2}",
       "kind": "template",
@@ -802,8 +1045,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 192,
+          "line": 184,
           "column": 5
+        }
+      ]
+    },
+    "45741d88aea175ae": {
+      "source": "当前出站请求使用应用内代理：{0}",
+      "kind": "template",
+      "placeholders": 1,
+      "refs": [
+        {
+          "file": "src/layouts/MainLayout.vue",
+          "line": 42,
+          "column": 9
         }
       ]
     },
@@ -814,7 +1069,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 304,
+          "line": 246,
           "column": 21
         }
       ]
@@ -826,7 +1081,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 96,
+          "line": 105,
           "column": 65
         }
       ]
@@ -838,7 +1093,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 153,
+          "line": 145,
           "column": 5
         }
       ]
@@ -850,7 +1105,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 442,
+          "line": 464,
           "column": 14
         }
       ]
@@ -862,7 +1117,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 61,
+          "line": 53,
           "column": 12
         }
       ]
@@ -886,7 +1141,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 428,
+          "line": 473,
           "column": 15
         }
       ]
@@ -898,8 +1153,25 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 152,
+          "line": 144,
           "column": 5
+        }
+      ]
+    },
+    "4d2966c438002afc": {
+      "source": "尚未检测",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 96,
+          "column": 21
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 217,
+          "column": 19
         }
       ]
     },
@@ -910,7 +1182,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 187,
+          "line": 179,
           "column": 5
         }
       ]
@@ -922,7 +1194,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 119,
+          "line": 140,
           "column": 12
         }
       ]
@@ -939,7 +1211,7 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 38,
+          "line": 40,
           "column": 12
         }
       ]
@@ -951,8 +1223,20 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 45,
+          "line": 53,
           "column": 9
+        }
+      ]
+    },
+    "4fe228f6f8a9869b": {
+      "source": "模型配置已导入当前草稿，请检查后点击保存",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 123,
+          "column": 17
         }
       ]
     },
@@ -975,8 +1259,20 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 160,
+          "line": 171,
           "column": 23
+        }
+      ]
+    },
+    "54c3d27db0476def": {
+      "source": "开启后随 Windows 登录自动运行，并在后台驻留系统托盘",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 158,
+          "column": 13
         }
       ]
     },
@@ -987,13 +1283,25 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 239,
+          "line": 244,
           "column": 23
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 243,
+          "line": 248,
           "column": 21
+        }
+      ]
+    },
+    "55b874176b135f6a": {
+      "source": "开机启动状态更新中，请稍后再试",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/state/appState.js",
+          "line": 1481,
+          "column": 32
         }
       ]
     },
@@ -1004,12 +1312,12 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 472,
+          "line": 517,
           "column": 21
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 500,
+          "line": 545,
           "column": 21
         }
       ]
@@ -1050,7 +1358,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 304,
+          "line": 326,
           "column": 12
         }
       ]
@@ -1062,7 +1370,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 176,
+          "line": 168,
           "column": 5
         }
       ]
@@ -1074,7 +1382,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 155,
+          "line": 166,
           "column": 24
         }
       ]
@@ -1091,6 +1399,18 @@
         }
       ]
     },
+    "5c9320b42753b392": {
+      "source": "模型配置已加密复制到剪贴板",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 87,
+          "column": 17
+        }
+      ]
+    },
     "5d1687a4a41883fd": {
       "source": "停止中...",
       "kind": "text",
@@ -1098,7 +1418,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 58,
+          "line": 59,
           "column": 12
         }
       ]
@@ -1110,25 +1430,32 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 44,
+          "line": 52,
           "column": 9
         }
       ]
     },
-    "6106f0a12583a334": {
-      "source": "刷新失败",
+    "5f8d556a9c47da3c": {
+      "source": "已关闭开机启动",
       "kind": "text",
       "placeholders": 0,
       "refs": [
         {
           "file": "src/views/Home.vue",
-          "line": 101,
-          "column": 21
-        },
+          "line": 27,
+          "column": 31
+        }
+      ]
+    },
+    "60cbcac7c6ffa9b2": {
+      "source": "未启用应用内代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
         {
           "file": "src/views/Home.vue",
-          "line": 111,
-          "column": 19
+          "line": 209,
+          "column": 11
         }
       ]
     },
@@ -1139,8 +1466,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 240,
+          "line": 213,
           "column": 61
+        }
+      ]
+    },
+    "62b92f9ff457f7a4": {
+      "source": "剪贴板为空",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 200,
+          "column": 19
         }
       ]
     },
@@ -1151,18 +1490,23 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 218,
+          "line": 197,
           "column": 55
         },
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 221,
+          "line": 200,
           "column": 54
         },
         {
           "file": "src/views/Config.vue",
-          "line": 25,
-          "column": 21
+          "line": 28,
+          "column": 27
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 104,
+          "column": 27
         }
       ]
     },
@@ -1173,7 +1517,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 428,
+          "line": 450,
           "column": 20
         }
       ]
@@ -1185,7 +1529,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 486,
+          "line": 491,
           "column": 169
         }
       ]
@@ -1197,7 +1541,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 320,
+          "line": 342,
           "column": 14
         }
       ]
@@ -1221,7 +1565,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 978,
+          "line": 1038,
           "column": 14
         }
       ]
@@ -1233,7 +1577,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 436,
+          "line": 458,
           "column": 14
         }
       ]
@@ -1262,7 +1606,7 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 121,
+          "line": 132,
           "column": 54
         }
       ]
@@ -1279,6 +1623,62 @@
         }
       ]
     },
+    "69539df74688b49b": {
+      "source": "密文中的模型配置无效",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 160,
+          "column": 21
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 162,
+          "column": 63
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 301,
+          "column": 21
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 304,
+          "column": 21
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 306,
+          "column": 77
+        }
+      ]
+    },
+    "696f75ead1ad5aa0": {
+      "source": "保存代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 182,
+          "column": 16
+        }
+      ]
+    },
+    "699fe7ade5407687": {
+      "source": "直连模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 144,
+          "column": 11
+        }
+      ]
+    },
     "6a7b96f399e58138": {
       "source": "例如：sk-xxxxxx",
       "kind": "text",
@@ -1286,7 +1686,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 400,
+          "line": 445,
           "column": 15
         }
       ]
@@ -1298,12 +1698,12 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 471,
+          "line": 476,
           "column": 19
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 483,
+          "line": 488,
           "column": 22
         }
       ]
@@ -1325,38 +1725,85 @@
         },
         {
           "file": "src/state/appState.js",
-          "line": 29,
+          "line": 30,
           "column": 31
         },
         {
           "file": "src/views/Config.vue",
-          "line": 18,
-          "column": 34
+          "line": 21,
+          "column": 30
         },
         {
           "file": "src/views/Config.vue",
-          "line": 18,
-          "column": 52
+          "line": 21,
+          "column": 48
         },
         {
           "file": "src/views/Home.vue",
-          "line": 84,
-          "column": 34
+          "line": 38,
+          "column": 30
         },
         {
           "file": "src/views/Home.vue",
-          "line": 84,
-          "column": 52
+          "line": 38,
+          "column": 48
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 87,
+          "line": 88,
           "column": 34
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 87,
+          "line": 88,
           "column": 52
+        }
+      ]
+    },
+    "6af86bd3e8ca378d": {
+      "source": "剪贴板内容不是受支持的加密模型配置",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 96,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 102,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 106,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 210,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 213,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 219,
+          "column": 5
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 222,
+          "column": 20
+        },
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 282,
+          "column": 20
         }
       ]
     },
@@ -1367,7 +1814,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 189,
+          "line": 181,
           "column": 5
         }
       ]
@@ -1391,7 +1838,7 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 55,
+          "line": 61,
           "column": 14
         }
       ]
@@ -1403,8 +1850,49 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 154,
+          "line": 146,
           "column": 5
+        }
+      ]
+    },
+    "6effaef3643a1948": {
+      "source": "启用后，本项目转发 Cursor 外网请求时会优先走该代理，不需要 v2rayN 开启系统全局代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 71,
+          "column": 53
+        }
+      ]
+    },
+    "705261f22f322fef": {
+      "source": "外网出口代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 70,
+          "column": 56
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 176,
+          "column": 58
+        }
+      ]
+    },
+    "71f0e78f1baa9bc7": {
+      "source": "剪贴板中的加密模型配置过大",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 203,
+          "column": 20
         }
       ]
     },
@@ -1415,7 +1903,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 303,
+          "line": 245,
           "column": 21
         }
       ]
@@ -1427,7 +1915,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1246,
+          "line": 1322,
           "column": 14
         }
       ]
@@ -1439,8 +1927,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 175,
+          "line": 167,
           "column": 5
+        }
+      ]
+    },
+    "7426d17e95ade0f5": {
+      "source": "默认使用 v2rayN 本地 HTTP 代理，保存后新建请求会优先走该出口",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 177,
+          "column": 55
         }
       ]
     },
@@ -1451,7 +1951,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 63,
+          "line": 64,
           "column": 10
         }
       ]
@@ -1463,12 +1963,12 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 280,
+          "line": 285,
           "column": 21
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 285,
+          "line": 290,
           "column": 21
         }
       ]
@@ -1480,7 +1980,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 116,
+          "line": 108,
           "column": 49
         }
       ]
@@ -1492,13 +1992,25 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 354,
+          "line": 399,
           "column": 20
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 354,
+          "line": 399,
           "column": 20
+        }
+      ]
+    },
+    "78a2aad141d2c918": {
+      "source": "当前系统暂不支持开机启动",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 27,
+          "column": 43
         }
       ]
     },
@@ -1509,7 +2021,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 149,
+          "line": 160,
           "column": 16
         }
       ]
@@ -1526,18 +2038,42 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 613,
-          "column": 12
+          "line": 678,
+          "column": 14
         },
         {
           "file": "src/state/appState.js",
-          "line": 205,
+          "line": 227,
           "column": 12
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 483,
+          "line": 488,
           "column": 22
+        }
+      ]
+    },
+    "7c694ef9e80c91b1": {
+      "source": "正在读取开机启动状态...",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 161,
+          "column": 13
+        }
+      ]
+    },
+    "7caa4b5d9380f4b8": {
+      "source": "密文中的模型配置字段不完整",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 166,
+          "column": 23
         }
       ]
     },
@@ -1560,7 +2096,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 149,
+          "line": 141,
           "column": 7
         }
       ]
@@ -1572,8 +2108,20 @@
       "refs": [
         {
           "file": "src/views/Home.vue",
-          "line": 91,
-          "column": 21
+          "line": 45,
+          "column": 27
+        }
+      ]
+    },
+    "7eb31818911488bf": {
+      "source": "从剪贴板导入",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/components/ModelEditor.vue",
+          "line": 668,
+          "column": 11
         }
       ]
     },
@@ -1584,12 +2132,12 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 183,
+          "line": 191,
           "column": 15
         },
         {
           "file": "src/state/appState.js",
-          "line": 1031,
+          "line": 1091,
           "column": 16
         }
       ]
@@ -1601,7 +2149,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 389,
+          "line": 331,
           "column": 65
         }
       ]
@@ -1613,7 +2161,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 394,
+          "line": 439,
           "column": 21
         }
       ]
@@ -1625,7 +2173,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 158,
+          "line": 169,
           "column": 18
         }
       ]
@@ -1639,18 +2187,6 @@
           "file": "src/components/ui/Combobox.vue",
           "line": 9,
           "column": 39
-        }
-      ]
-    },
-    "83913e71fcf7ff60": {
-      "source": "刷新成功",
-      "kind": "text",
-      "placeholders": 0,
-      "refs": [
-        {
-          "file": "src/views/Home.vue",
-          "line": 108,
-          "column": 13
         }
       ]
     },
@@ -1673,8 +2209,20 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 438,
+          "line": 483,
           "column": 25
+        }
+      ]
+    },
+    "842b9f11cdd96bda": {
+      "source": "开机启动",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 157,
+          "column": 13
         }
       ]
     },
@@ -1690,7 +2238,7 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 43,
+          "line": 45,
           "column": 12
         }
       ]
@@ -1702,7 +2250,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 975,
+          "line": 1035,
           "column": 14
         }
       ]
@@ -1719,6 +2267,18 @@
         }
       ]
     },
+    "8860a1c62144635f": {
+      "source": "该口令不会保存。导入时必须输入相同口令，建议使用至少 8 个字符。",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 42,
+          "column": 14
+        }
+      ]
+    },
     "899add6275682210": {
       "source": "留空时默认 200000",
       "kind": "text",
@@ -1728,6 +2288,35 @@
           "file": "src/components/ModelAdapterModal.vue",
           "line": 201,
           "column": 19
+        }
+      ]
+    },
+    "8a0302ddf022cabd": {
+      "source": "导出失败：{0}",
+      "kind": "template",
+      "placeholders": 1,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 74,
+          "column": 17
+        },
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 90,
+          "column": 17
+        }
+      ]
+    },
+    "8a2e59f7e25c2e85": {
+      "source": "开启后不依赖 Windows 系统全局代理；关闭后会回退到环境变量或系统代理策略",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 207,
+          "column": 11
         }
       ]
     },
@@ -1750,8 +2339,20 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 154,
+          "line": 165,
           "column": 20
+        }
+      ]
+    },
+    "8c0d84831a3c3d5b": {
+      "source": "当前为本地服务模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 147,
+          "column": 11
         }
       ]
     },
@@ -1784,12 +2385,12 @@
         },
         {
           "file": "src/views/Config.vue",
-          "line": 75,
+          "line": 127,
           "column": 56
         },
         {
           "file": "src/views/Home.vue",
-          "line": 187,
+          "line": 232,
           "column": 68
         }
       ]
@@ -1801,8 +2402,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 165,
+          "line": 157,
           "column": 5
+        }
+      ]
+    },
+    "8d467928e4b0c4e5": {
+      "source": "当前出站请求使用应用内代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/layouts/MainLayout.vue",
+          "line": 43,
+          "column": 9
         }
       ]
     },
@@ -1849,7 +2462,7 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 80,
+          "line": 132,
           "column": 66
         }
       ]
@@ -1861,7 +2474,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 460,
+          "line": 482,
           "column": 14
         }
       ]
@@ -1873,13 +2486,18 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 616,
-          "column": 12
+          "line": 681,
+          "column": 14
         },
         {
           "file": "src/views/Config.vue",
-          "line": 55,
+          "line": 61,
           "column": 14
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 182,
+          "column": 16
         }
       ]
     },
@@ -1890,7 +2508,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 61,
+          "line": 62,
           "column": 12
         }
       ]
@@ -1902,8 +2520,25 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 341,
+          "line": 283,
           "column": 23
+        }
+      ]
+    },
+    "9278d5abf647a23b": {
+      "source": "选择出口模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 91,
+          "column": 17
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 200,
+          "column": 15
         }
       ]
     },
@@ -1914,7 +2549,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 421,
+          "line": 466,
           "column": 21
         }
       ]
@@ -1926,7 +2561,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 77,
+          "line": 85,
           "column": 36
         }
       ]
@@ -1938,7 +2573,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 191,
+          "line": 183,
           "column": 5
         }
       ]
@@ -1962,12 +2597,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1351,
+          "line": 1427,
           "column": 32
         },
         {
           "file": "src/state/appState.js",
-          "line": 1372,
+          "line": 1448,
           "column": 32
         }
       ]
@@ -1979,7 +2614,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 151,
+          "line": 162,
           "column": 12
         }
       ]
@@ -1991,7 +2626,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 305,
+          "line": 247,
           "column": 21
         }
       ]
@@ -2003,8 +2638,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 163,
+          "line": 155,
           "column": 5
+        }
+      ]
+    },
+    "9c38b6e9bf94abec": {
+      "source": "已切换到直连 Cursor 模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 75,
+          "column": 29
         }
       ]
     },
@@ -2015,8 +2662,20 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 486,
+          "line": 531,
           "column": 21
+        }
+      ]
+    },
+    "9d19a9a8fe6df596": {
+      "source": "开机启动设置失败",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 86,
+          "column": 27
         }
       ]
     },
@@ -2027,7 +2686,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1052,
+          "line": 1112,
           "column": 14
         }
       ]
@@ -2051,7 +2710,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 488,
+          "line": 510,
           "column": 14
         }
       ]
@@ -2075,7 +2734,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 454,
+          "line": 476,
           "column": 14
         }
       ]
@@ -2087,12 +2746,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 998,
+          "line": 1058,
           "column": 12
         },
         {
           "file": "src/state/appState.js",
-          "line": 1041,
+          "line": 1101,
           "column": 87
         }
       ]
@@ -2109,8 +2768,8 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 616,
-          "column": 12
+          "line": 681,
+          "column": 14
         }
       ]
     },
@@ -2121,12 +2780,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1296,
+          "line": 1372,
           "column": 14
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 280,
+          "line": 285,
           "column": 29
         }
       ]
@@ -2150,8 +2809,20 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 159,
+          "line": 170,
           "column": 25
+        }
+      ]
+    },
+    "a55a88237df85d98": {
+      "source": "当前为直连模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 146,
+          "column": 11
         }
       ]
     },
@@ -2172,12 +2843,12 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 40,
+          "line": 42,
           "column": 12
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 48,
+          "line": 50,
           "column": 12
         }
       ]
@@ -2189,7 +2860,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 152,
+          "line": 163,
           "column": 11
         }
       ]
@@ -2201,7 +2872,24 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 613,
+          "line": 678,
+          "column": 14
+        }
+      ]
+    },
+    "a8dde53e57493f4a": {
+      "source": "跟随系统代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 86,
+          "column": 27
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 31,
           "column": 12
         }
       ]
@@ -2218,7 +2906,7 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 408,
+          "line": 453,
           "column": 21
         }
       ]
@@ -2240,12 +2928,12 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 39,
+          "line": 41,
           "column": 12
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 47,
+          "line": 49,
           "column": 12
         }
       ]
@@ -2257,7 +2945,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1027,
+          "line": 1087,
           "column": 16
         }
       ]
@@ -2269,7 +2957,7 @@
       "refs": [
         {
           "file": "src/views/Home.vue",
-          "line": 183,
+          "line": 228,
           "column": 47
         }
       ]
@@ -2293,7 +2981,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 68,
+          "line": 69,
           "column": 7
         }
       ]
@@ -2310,6 +2998,23 @@
         }
       ]
     },
+    "b06325c5660f0c29": {
+      "source": "直连",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 86,
+          "column": 27
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 32,
+          "column": 12
+        }
+      ]
+    },
     "b10041a13f5c55b1": {
       "source": "模型输出：{0} × ${1}/1M = {2}",
       "kind": "template",
@@ -2317,7 +3022,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 190,
+          "line": 182,
           "column": 5
         }
       ]
@@ -2339,13 +3044,25 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 41,
+          "line": 43,
           "column": 12
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 49,
+          "line": 51,
           "column": 12
+        }
+      ]
+    },
+    "b42049dcf8a05ef7": {
+      "source": "已切换到本地服务模式",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 75,
+          "column": 50
         }
       ]
     },
@@ -2356,7 +3073,24 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 404,
+          "line": 409,
+          "column": 13
+        }
+      ]
+    },
+    "b4d512f2ba91c0fa": {
+      "source": "已添加到开机启动",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 89,
+          "column": 29
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 159,
           "column": 13
         }
       ]
@@ -2368,7 +3102,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 57,
+          "line": 59,
           "column": 12
         }
       ]
@@ -2380,7 +3114,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 171,
+          "line": 163,
           "column": 5
         }
       ]
@@ -2392,7 +3126,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 427,
+          "line": 472,
           "column": 15
         }
       ]
@@ -2404,7 +3138,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 156,
+          "line": 167,
           "column": 19
         }
       ]
@@ -2416,7 +3150,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 413,
+          "line": 458,
           "column": 15
         }
       ]
@@ -2428,7 +3162,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 514,
+          "line": 559,
           "column": 21
         }
       ]
@@ -2445,6 +3179,18 @@
         }
       ]
     },
+    "ba2f4cb5a86c3c54": {
+      "source": "无法读取系统剪贴板，请检查应用权限后重试",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 31,
+          "column": 12
+        }
+      ]
+    },
     "ba3c66f90fd11725": {
       "source": "已识别系统代理",
       "kind": "text",
@@ -2452,7 +3198,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 32,
+          "line": 35,
           "column": 12
         }
       ]
@@ -2476,7 +3222,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 447,
+          "line": 492,
           "column": 21
         }
       ]
@@ -2488,7 +3234,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 280,
+          "line": 222,
           "column": 21
         }
       ]
@@ -2500,7 +3246,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 162,
+          "line": 154,
           "column": 5
         }
       ]
@@ -2512,7 +3258,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 448,
+          "line": 470,
           "column": 14
         }
       ]
@@ -2524,7 +3270,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 48,
+          "line": 56,
           "column": 12
         }
       ]
@@ -2536,8 +3282,44 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 326,
+          "line": 268,
           "column": 19
+        }
+      ]
+    },
+    "c0a3d6586bbe4cd8": {
+      "source": "无法写入系统剪贴板，请检查应用权限后重试",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 34,
+          "column": 12
+        }
+      ]
+    },
+    "c15783449c0b600d": {
+      "source": "开启后，仅将带合法上游地址的 Cursor 请求转发到官方服务",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 145,
+          "column": 11
+        }
+      ]
+    },
+    "c1fd812f81cab441": {
+      "source": "处理中...",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/components/ModelEditor.vue",
+          "line": 662,
+          "column": 14
         }
       ]
     },
@@ -2548,13 +3330,25 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 268,
+          "line": 273,
           "column": 21
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 273,
+          "line": 278,
           "column": 21
+        }
+      ]
+    },
+    "c3660f647c093945": {
+      "source": "请输入导出该模型配置时使用的口令。",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 54,
+          "column": 14
         }
       ]
     },
@@ -2577,7 +3371,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 161,
+          "line": 172,
           "column": 28
         }
       ]
@@ -2589,7 +3383,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 69,
+          "line": 70,
           "column": 7
         }
       ]
@@ -2601,7 +3395,7 @@
       "refs": [
         {
           "file": "src/views/Home.vue",
-          "line": 186,
+          "line": 231,
           "column": 63
         }
       ]
@@ -2637,7 +3431,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 461,
+          "line": 506,
           "column": 21
         }
       ]
@@ -2649,17 +3443,17 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1267,
+          "line": 1343,
           "column": 28
         },
         {
           "file": "src/state/appState.js",
-          "line": 1269,
+          "line": 1345,
           "column": 38
         },
         {
           "file": "src/state/appState.js",
-          "line": 1304,
+          "line": 1380,
           "column": 93
         }
       ]
@@ -2671,7 +3465,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 150,
+          "line": 142,
           "column": 7
         }
       ]
@@ -2683,8 +3477,20 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 987,
+          "line": 1047,
           "column": 51
+        }
+      ]
+    },
+    "ca0a622627ebc638": {
+      "source": "加密模型配置处理失败",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 36,
+          "column": 10
         }
       ]
     },
@@ -2695,7 +3501,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 164,
+          "line": 156,
           "column": 5
         }
       ]
@@ -2719,8 +3525,20 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 296,
+          "line": 318,
           "column": 12
+        }
+      ]
+    },
+    "ced60a182cc79b79": {
+      "source": "口令至少需要 8 个字符",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 121,
+          "column": 24
         }
       ]
     },
@@ -2748,6 +3566,18 @@
         }
       ]
     },
+    "d0212e36ff36763e": {
+      "source": "加密导出到剪贴板",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/components/ModelEditor.vue",
+          "line": 662,
+          "column": 14
+        }
+      ]
+    },
     "d0325067fed88e5a": {
       "source": "缓存命中率 {0}",
       "kind": "template",
@@ -2760,6 +3590,18 @@
         }
       ]
     },
+    "d08fd4224abcd69d": {
+      "source": "切换失败",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 72,
+          "column": 27
+        }
+      ]
+    },
     "d20ab96566d33f25": {
       "source": "{0} 的显示名称不能为空",
       "kind": "template",
@@ -2767,7 +3609,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 439,
+          "line": 461,
           "column": 14
         }
       ]
@@ -2779,7 +3621,7 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 65,
+          "line": 66,
           "column": 62
         }
       ]
@@ -2791,12 +3633,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1215,
+          "line": 1291,
           "column": 14
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 268,
+          "line": 273,
           "column": 29
         }
       ]
@@ -2820,13 +3662,25 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 208,
+          "line": 230,
           "column": 38
         },
         {
           "file": "src/state/appState.js",
-          "line": 238,
+          "line": 260,
           "column": 50
+        }
+      ]
+    },
+    "d3dbb00dc2d77d70": {
+      "source": "输入解密口令",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useModelClipboardTransfer.js",
+          "line": 55,
+          "column": 18
         }
       ]
     },
@@ -2837,12 +3691,12 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 575,
+          "line": 620,
           "column": 21
         },
         {
           "file": "src/state/appState.js",
-          "line": 310,
+          "line": 332,
           "column": 49
         }
       ]
@@ -2866,12 +3720,12 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 551,
+          "line": 596,
           "column": 21
         },
         {
           "file": "src/state/appState.js",
-          "line": 331,
+          "line": 353,
           "column": 36
         }
       ]
@@ -2883,7 +3737,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 453,
+          "line": 498,
           "column": 15
         }
       ]
@@ -2895,13 +3749,25 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 116,
+          "line": 108,
           "column": 38
         },
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 302,
+          "line": 244,
           "column": 21
+        }
+      ]
+    },
+    "d9d18fd97b864210": {
+      "source": "当前运行环境不支持安全加密",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/utils/modelClipboardCrypto.js",
+          "line": 114,
+          "column": 25
         }
       ]
     },
@@ -2924,12 +3790,12 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 598,
+          "line": 643,
           "column": 19
         },
         {
           "file": "src/state/appState.js",
-          "line": 260,
+          "line": 282,
           "column": 18
         }
       ]
@@ -2941,7 +3807,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 433,
+          "line": 455,
           "column": 14
         }
       ]
@@ -2953,7 +3819,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1009,
+          "line": 1069,
           "column": 5
         }
       ]
@@ -2965,7 +3831,7 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 76,
+          "line": 128,
           "column": 48
         }
       ]
@@ -2989,7 +3855,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 157,
+          "line": 168,
           "column": 22
         }
       ]
@@ -3006,7 +3872,7 @@
         },
         {
           "file": "src/state/appState.js",
-          "line": 1133,
+          "line": 1193,
           "column": 21
         }
       ]
@@ -3018,8 +3884,20 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 173,
+          "line": 165,
           "column": 5
+        }
+      ]
+    },
+    "e1fc164a817aa758": {
+      "source": "已导入待保存",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/components/ModelEditor.vue",
+          "line": 671,
+          "column": 74
         }
       ]
     },
@@ -3030,12 +3908,12 @@
       "refs": [
         {
           "file": "src/views/Config.vue",
-          "line": 49,
+          "line": 55,
           "column": 56
         },
         {
           "file": "src/views/Home.vue",
-          "line": 182,
+          "line": 227,
           "column": 56
         }
       ]
@@ -3083,8 +3961,20 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 421,
+          "line": 426,
           "column": 145
+        }
+      ]
+    },
+    "e5f2a3ac572a024c": {
+      "source": "已从开机启动中移除",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 89,
+          "column": 42
         }
       ]
     },
@@ -3095,8 +3985,35 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 177,
+          "line": 169,
           "column": 5
+        }
+      ]
+    },
+    "e805d2d35719134d": {
+      "source": "应用内代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 86,
+          "column": 27
+        },
+        {
+          "file": "src/views/Config.vue",
+          "line": 101,
+          "column": 13
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 30,
+          "column": 12
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 206,
+          "column": 11
         }
       ]
     },
@@ -3124,6 +4041,18 @@
         }
       ]
     },
+    "ea709ea7c6f9985a": {
+      "source": "已优先使用应用内代理",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Home.vue",
+          "line": 208,
+          "column": 11
+        }
+      ]
+    },
     "eaffd48cd2ea9f1a": {
       "source": "例如：https://api.anthropic.com",
       "kind": "text",
@@ -3131,7 +4060,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 96,
+          "line": 105,
           "column": 32
         }
       ]
@@ -3143,7 +4072,7 @@
       "refs": [
         {
           "file": "src/components/HomeMetricsCard.vue",
-          "line": 186,
+          "line": 178,
           "column": 5
         }
       ]
@@ -3155,7 +4084,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 214,
+          "line": 236,
           "column": 10
         }
       ]
@@ -3167,8 +4096,25 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 1029,
+          "line": 1089,
           "column": 16
+        }
+      ]
+    },
+    "edc9038a99e62f74": {
+      "source": "当前出口：",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 95,
+          "column": 53
+        },
+        {
+          "file": "src/views/Home.vue",
+          "line": 216,
+          "column": 107
         }
       ]
     },
@@ -3179,7 +4125,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 39,
+          "line": 47,
           "column": 9
         }
       ]
@@ -3191,7 +4137,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 150,
+          "line": 161,
           "column": 12
         }
       ]
@@ -3203,12 +4149,12 @@
       "refs": [
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 447,
+          "line": 452,
           "column": 15
         },
         {
           "file": "src/views/ModelConfig.vue",
-          "line": 448,
+          "line": 453,
           "column": 15
         }
       ]
@@ -3220,7 +4166,7 @@
       "refs": [
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 162,
+          "line": 173,
           "column": 16
         }
       ]
@@ -3244,7 +4190,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 317,
+          "line": 339,
           "column": 14
         }
       ]
@@ -3256,7 +4202,7 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 989,
+          "line": 1049,
           "column": 38
         }
       ]
@@ -3273,17 +4219,17 @@
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 535,
+          "line": 580,
           "column": 21
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 559,
+          "line": 604,
           "column": 21
         },
         {
           "file": "src/components/ModelEditor.vue",
-          "line": 583,
+          "line": 628,
           "column": 21
         }
       ]
@@ -3295,7 +4241,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 96,
+          "line": 104,
           "column": 21
         }
       ]
@@ -3322,7 +4268,7 @@
         },
         {
           "file": "src/composables/useInputModal.js",
-          "line": 20,
+          "line": 28,
           "column": 46
         },
         {
@@ -3334,6 +4280,11 @@
           "file": "src/composables/useModal.js",
           "line": 22,
           "column": 41
+        },
+        {
+          "file": "src/views/Config.vue",
+          "line": 32,
+          "column": 12
         }
       ]
     },
@@ -3344,12 +4295,12 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 451,
+          "line": 473,
           "column": 14
         },
         {
           "file": "src/state/appState.js",
-          "line": 457,
+          "line": 479,
           "column": 14
         }
       ]
@@ -3361,8 +4312,20 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 50,
+          "line": 58,
           "column": 10
+        }
+      ]
+    },
+    "f95ea7f4c063eea7": {
+      "source": "未启用",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/views/Config.vue",
+          "line": 105,
+          "column": 13
         }
       ]
     },
@@ -3373,7 +4336,7 @@
       "refs": [
         {
           "file": "src/components/ui/InputModal.vue",
-          "line": 70,
+          "line": 98,
           "column": 66
         },
         {
@@ -3393,7 +4356,7 @@
         },
         {
           "file": "src/state/appState.js",
-          "line": 1048,
+          "line": 1108,
           "column": 12
         }
       ]
@@ -3405,8 +4368,20 @@
       "refs": [
         {
           "file": "src/state/appState.js",
-          "line": 987,
+          "line": 1047,
           "column": 40
+        }
+      ]
+    },
+    "fc946eac6e571374": {
+      "source": "再次输入口令",
+      "kind": "text",
+      "placeholders": 0,
+      "refs": [
+        {
+          "file": "src/composables/useInputModal.js",
+          "line": 31,
+          "column": 72
         }
       ]
     },
@@ -3417,7 +4392,7 @@
       "refs": [
         {
           "file": "src/layouts/MainLayout.vue",
-          "line": 191,
+          "line": 199,
           "column": 15
         }
       ]

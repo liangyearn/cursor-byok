@@ -275,11 +275,14 @@ func (host *Host) rebuildLocked(cfg serverconfig.Config) error {
 		SystemSettingService: &serverSystemSettings{configs: host.configs},
 		HTTPClient:           netproxy.NewHTTPClient(30000 * time.Second),
 	}
+	// lyh用cursor修改 2026-08-19：直连模式统一在全局策略中短路，避免为每个上游新增路由重复挂载动作。
+	directRoute := upstream.ForwardAction(routeDeps, upstream.CompatRouteConfig{Name: "configured_upstream"})
 
 	host.mux = server.New(
 		server.Use(
 			server.Recover(),
 			server.ServerContext(),
+			server.RoutePolicy(host.configs, directRoute),
 			server.ErrorEncoder(),
 		),
 		server.GET(healthPath,
