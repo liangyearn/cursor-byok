@@ -1,27 +1,33 @@
 import { computed, reactive, watchSyncEffect } from "vue";
 import { Events } from "@wailsio/runtime";
+import dayjs from "dayjs";
 import {
+  checkForUpdates,
+  exportUserConfig as exportUserConfigFile,
   getAppVersion,
   getHomeMetricsSummary,
   getModelAdapterTestResults,
+  installReadyUpdate,
   getProxyState,
-  getStartupStatus,
+  importUserConfig as importUserConfigFile,
   openConfigWindow as openConfig,
   loadUserConfig,
   openLogsDirectory,
   openModelConfig,
-  openModelEditor,
   saveUserConfig,
-  setStartupEnabled as persistStartupEnabled,
   startProxyService,
   stopProxyService,
   testModelAdapter,
+  fetchModelAdapterModels,
 } from "@/services/clientApi";
+import {
+  normalizeReasoningEffort,
+  SUPPORTED_REASONING_EFFORTS,
+} from "@/state/modelAdapterReasoning";
 
 const APP_STATE_STORAGE_KEY = "cursor-client:runtime-state:v2";
 const GENERIC_SERVICE_ERROR = "服务错误";
 const SUPPORTED_MODEL_ADAPTER_TYPES = new Set(["openai", "anthropic"]);
-const SUPPORTED_REASONING_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
 const SUPPORTED_ANTHROPIC_THINKING_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
 export const ANTHROPIC_THINKING_EFFORT_DEFAULT = "xhigh";
 export const OPENAI_ENDPOINT_RESPONSES = "/v1/responses";
@@ -35,19 +41,15 @@ export const EXTRA_PARAMS_DEFAULT_JSON = `{
 export const CUSTOM_HEADERS_DEFAULT_JSON = `{
 }`;
 const SUPPORTED_OPENAI_ENDPOINTS = new Set([OPENAI_ENDPOINT_RESPONSES, OPENAI_ENDPOINT_CHAT_COMPLETIONS, OPENAI_ENDPOINT_CUSTOM]);
-const SUPPORTED_ROUTE_MODES = new Set(["local", "upstream"]);
-const SUPPORTED_OUTBOUND_PROXY_MODES = new Set(["configured", "system", "direct"]);
-const DEFAULT_OUTBOUND_PROXY_URL = "http://127.0.0.1:19808";
 const PROXY_STATE_EVENT = "proxy:state";
 const USER_CONFIG_CHANGED_EVENT = "user-config:changed";
+const UPDATE_STATE_EVENT = "update:state";
+const UPDATE_PROGRESS_EVENT = "update:progress";
+const UPDATE_READY_EVENT = "update:ready";
+const UPDATE_ERROR_EVENT = "update:error";
 const MODEL_ADAPTER_TEST_UPDATED_EVENT = "model-adapter-test:updated";
 const SUPPORTED_MODEL_ADAPTER_TEST_STATUSES = new Set(["idle", "running", "success", "error"]);
 const HOME_METRICS_MIN_LOADING_MS = 600;
-
-export const ROUTE_MODE_OPTIONS = [
-  { label: "本地服务模式", value: "local" },
-  { label: "直连 Cursor 模式", value: "upstream" },
-];
 
 function asString(value) {
   if (typeof value === "string") {
@@ -111,68 +113,16 @@ function asNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function normalizeRouteMode(value, fallback = "local") {
-  const text = asString(value).toLowerCase();
-  if (SUPPORTED_ROUTE_MODES.has(text)) {
+function formatReleaseDate(value) {
+  const text = asString(value);
+  if (!text) {
+    return "未知";
+  }
+  const parsed = dayjs(text);
+  if (!parsed.isValid()) {
     return text;
   }
-  return fallback;
-}
-
-/**
- * 标准化外网出口代理模式。
- * @param {string} value 用户选择或配置文件中的代理模式。
- * @param {string} fallback 无法识别模式时使用的默认模式。
- * @returns {string} 返回 configured、system 或 direct。
- */
-function normalizeOutboundProxyMode(value, fallback = "configured") {
-  const text = asString(value).toLowerCase();
-  if (SUPPORTED_OUTBOUND_PROXY_MODES.has(text)) {
-    return text;
-  }
-  return fallback;
-}
-
-/**
- * 标准化外网出口代理地址。
- * @param {string} value 用户输入的代理地址。
- * @param {string} fallback 用户未输入地址时使用的默认地址。
- * @returns {string} 返回可保存的代理地址；协议非法或 URL 非法时返回空字符串。
- */
-function normalizeProxyURL(value, fallback = DEFAULT_OUTBOUND_PROXY_URL) {
-  const text = asString(value) || fallback;
-  try {
-    const parsed = new URL(text);
-    if (!["http:", "https:", "socks5:"].includes(parsed.protocol)) {
-      return "";
-    }
-    parsed.protocol = parsed.protocol.toLowerCase();
-    parsed.hostname = parsed.hostname.toLowerCase();
-    return parsed.toString().replace(/\/+$/, "");
-  } catch (_error) {
-    return "";
-  }
-}
-
-// lyh用cursor修改 2026-07-27：统一前端出口代理配置归一化，确保保存到后端的策略与运行时 netproxy 语义一致。
-/**
- * 标准化外网出口代理配置。
- * @param {Object} source 配置文件、缓存或页面状态中的出口代理配置。
- * @returns {{enabled: boolean, mode: string, url: string}} 返回可提交给后端的出口代理配置。
- */
-function normalizeOutboundProxy(source) {
-  const raw = source && typeof source === "object" ? source : {};
-  const mode = normalizeOutboundProxyMode(raw.mode);
-  const rawURL = asString(raw.url);
-  const url = mode === "configured"
-    ? normalizeProxyURL(rawURL, rawURL ? "" : DEFAULT_OUTBOUND_PROXY_URL) || rawURL || DEFAULT_OUTBOUND_PROXY_URL
-    : "";
-  const enabled = mode === "configured" ? asBoolean(raw.enabled, true) : false;
-  return {
-    enabled,
-    mode,
-    url,
-  };
+  return parsed.format("YYYY-MM-DD HH:mm");
 }
 
 function normalizeBaseURL(value) {
@@ -220,7 +170,7 @@ export function buildModelAdapterTestRequestHash(source) {
     normalizeBaseURL(adapter.baseURL),
     asString(adapter.apiKey),
     asString(adapter.modelID),
-    adapter.type === "openai" ? asString(adapter.reasoningEffort || "medium") : "",
+    adapter.type === "openai" ? asString(adapter.reasoningEffort) : "",
     adapter.type === "openai" ? normalizeOpenAIEndpoint(adapter.openAIEndpoint) : "",
     adapter.type === "openai" ? String(Boolean(adapter.openAIExtraParamsEnabled)) : "false",
     adapter.type === "openai" && adapter.openAIExtraParamsEnabled ? asString(adapter.openAIExtraParamsJSON) : "",
@@ -281,7 +231,7 @@ function normalizeModelAdapterTestResult(source) {
     rawResponse: asString(raw.rawResponse),
     testedAt: asString(raw.testedAt),
   };
-  if (!normalized.summaryText) {
+  if (status === "running" || status === "success") {
     normalized.summaryText = formatModelAdapterTestSummary(normalized);
   }
   if (status === "error" && !normalized.summaryText) {
@@ -302,13 +252,14 @@ function normalizeModelAdapterTestResults(source) {
 export function createEmptyModelAdapter() {
   return {
     id: "",
+    sort: 0,
     displayName: "",
     type: "openai",
     baseURL: "",
     apiKey: "",
     tooltipData: "备注",
     modelID: "",
-    reasoningEffort: "medium",
+    reasoningEffort: "",
     openAIEndpoint: OPENAI_ENDPOINT_RESPONSES,
     openAIExtraParamsEnabled: false,
     openAIExtraParamsJSON: OPENAI_EXTRA_PARAMS_DEFAULT_JSON,
@@ -383,7 +334,7 @@ function validateAnthropicExtraParamsJSON(value) {
 export function normalizeModelAdapter(source) {
   const raw = source && typeof source === "object" ? source : {};
   const normalizedType = asString(raw.type).toLowerCase();
-  const normalizedReasoningEffort = asString(raw.reasoningEffort || raw.reasoning_effort).toLowerCase();
+  const normalizedReasoningEffort = normalizeReasoningEffort(raw.reasoningEffort ?? raw.reasoning_effort);
   const normalizedAnthropicThinkingEffort = asString(
     raw.anthropicThinkingEffort
       ?? raw.anthropic_thinking_effort
@@ -409,15 +360,14 @@ export function normalizeModelAdapter(source) {
     : "";
   return {
     id: asString(raw.id),
+    sort: asPositiveInteger(raw.sort),
     displayName: asString(raw.displayName || raw.name),
     type: SUPPORTED_MODEL_ADAPTER_TYPES.has(normalizedType) ? normalizedType : "",
     baseURL: normalizeBaseURL(raw.baseURL || raw.url),
     apiKey: asString(raw.apiKey || raw.key),
     tooltipData: asString(raw.tooltipData),
     modelID: asString(raw.modelID),
-    reasoningEffort: SUPPORTED_REASONING_EFFORTS.has(normalizedReasoningEffort)
-      ? normalizedReasoningEffort
-      : "medium",
+    reasoningEffort: normalizedReasoningEffort,
     openAIEndpoint: normalizedType === "openai" ? normalizedOpenAIEndpoint : "",
     openAIExtraParamsEnabled,
     openAIExtraParamsJSON,
@@ -446,7 +396,29 @@ export function normalizeModelAdapter(source) {
 }
 
 export function normalizeModelAdapters(source) {
-  return asArray(source).map((item) => normalizeModelAdapter(item));
+  return asArray(source)
+    .map((item, sourceIndex) => ({
+      adapter: normalizeModelAdapter(item),
+      sourceIndex,
+    }))
+    .sort((left, right) => {
+      const leftSort = left.adapter.sort;
+      const rightSort = right.adapter.sort;
+      if (leftSort <= 0 && rightSort <= 0) {
+        return left.sourceIndex - right.sourceIndex;
+      }
+      if (leftSort <= 0) {
+        return 1;
+      }
+      if (rightSort <= 0) {
+        return -1;
+      }
+      return leftSort - rightSort || left.sourceIndex - right.sourceIndex;
+    })
+    .map(({ adapter }, index) => ({
+      ...adapter,
+      sort: index + 1,
+    }));
 }
 
 export function validateModelAdapters(source) {
@@ -454,9 +426,6 @@ export function validateModelAdapters(source) {
   const seenIdentityKeys = new Set();
   for (const [index, adapter] of adapters.entries()) {
     const prefix = `模型 ${index + 1}`;
-    if (!adapter.displayName) {
-      return `${prefix} 的显示名称不能为空`;
-    }
     if (!SUPPORTED_MODEL_ADAPTER_TYPES.has(adapter.type)) {
       return `${prefix} 的类型仅支持 OpenAI 或 Anthropic`;
     }
@@ -466,14 +435,26 @@ export function validateModelAdapters(source) {
     if (!adapter.apiKey) {
       return `${prefix} 的访问密钥不能为空`;
     }
-    if (!adapter.tooltipData) {
-      return `${prefix} 的悬停提示不能为空`;
+    if (!adapter.displayName) {
+      return `${prefix} 的显示名称不能为空`;
     }
     if (!adapter.modelID) {
       return `${prefix} 的模型标识不能为空`;
     }
+    if (adapter.contextWindowTokens && (!Number.isInteger(adapter.contextWindowTokens) || adapter.contextWindowTokens <= 0)) {
+      return `${prefix} 的上下文窗口必须为正整数`;
+    }
     if (adapter.type === "openai" && !SUPPORTED_REASONING_EFFORTS.has(adapter.reasoningEffort)) {
-      return `${prefix} 的推理强度仅支持 low、medium、high、xhigh、max`;
+      return `${prefix} 的推理强度仅支持不设置、low、medium、high、xhigh、max`;
+    }
+    if (adapter.type === "anthropic" && adapter.anthropicMaxTokens && (!Number.isInteger(adapter.anthropicMaxTokens) || adapter.anthropicMaxTokens <= 0)) {
+      return `${prefix} 的最大输出 Token 必须为正整数`;
+    }
+    if (adapter.type === "anthropic" && !SUPPORTED_ANTHROPIC_THINKING_EFFORTS.has(adapter.anthropicThinkingEffort)) {
+      return `${prefix} 的 Anthropic 思考强度仅支持 low、medium、high、xhigh、max`;
+    }
+    if (adapter.type === "openai" && adapter.maxCompletionTokens && (!Number.isInteger(adapter.maxCompletionTokens) || adapter.maxCompletionTokens <= 0)) {
+      return `${prefix} 的最大输出 Token 必须为正整数`;
     }
     if (adapter.type === "openai" && !isValidOpenAIEndpoint(adapter.openAIEndpoint)) {
       return `${prefix} 的 OpenAI 端点仅支持 /v1/responses、/v1/chat/completions 或以 / 开头的自定义路径`;
@@ -484,29 +465,20 @@ export function validateModelAdapters(source) {
         return `${prefix} 的 ${extraParamsError}`;
       }
     }
-    if (adapter.customHeadersEnabled) {
-      const customHeadersError = validateHeadersJSON(adapter.customHeadersJSON);
-      if (customHeadersError) {
-        return `${prefix} 的 ${customHeadersError}`;
-      }
-    }
     if (adapter.type === "anthropic" && adapter.anthropicExtraParamsEnabled) {
       const extraParamsError = validateAnthropicExtraParamsJSON(adapter.anthropicExtraParamsJSON);
       if (extraParamsError) {
         return `${prefix} 的 ${extraParamsError}`;
       }
     }
-    if (adapter.type === "anthropic" && !SUPPORTED_ANTHROPIC_THINKING_EFFORTS.has(adapter.anthropicThinkingEffort)) {
-      return `${prefix} 的 Anthropic 思考强度仅支持 low、medium、high、xhigh、max`;
+    if (adapter.customHeadersEnabled) {
+      const customHeadersError = validateHeadersJSON(adapter.customHeadersJSON);
+      if (customHeadersError) {
+        return `${prefix} 的 ${customHeadersError}`;
+      }
     }
-    if (adapter.contextWindowTokens && (!Number.isInteger(adapter.contextWindowTokens) || adapter.contextWindowTokens <= 0)) {
-      return `${prefix} 的上下文窗口必须为正整数`;
-    }
-    if (adapter.maxCompletionTokens && (!Number.isInteger(adapter.maxCompletionTokens) || adapter.maxCompletionTokens <= 0)) {
-      return `${prefix} 的最大输出 Token 必须为正整数`;
-    }
-    if (adapter.anthropicMaxTokens && (!Number.isInteger(adapter.anthropicMaxTokens) || adapter.anthropicMaxTokens <= 0)) {
-      return `${prefix} 的最大输出 Token 必须为正整数`;
+    if (!adapter.tooltipData) {
+      return `${prefix} 的悬停提示不能为空`;
     }
     if (adapter.thinkingBudgetTokens && (!Number.isInteger(adapter.thinkingBudgetTokens) || adapter.thinkingBudgetTokens <= 0)) {
       return `${prefix} 的思考预算 Token 必须为正整数`;
@@ -516,20 +488,6 @@ export function validateModelAdapters(source) {
       return `模型渠道重复，请检查 url、modelID、apiKey、displayName、endpoint 组合`;
     }
     seenIdentityKeys.add(dedupeKey);
-  }
-  return "";
-}
-
-function validateConfigPayload(payload) {
-  if (!SUPPORTED_ROUTE_MODES.has(normalizeRouteMode(payload?.routing?.mode, ""))) {
-    return "运行模式仅支持 local 或 upstream";
-  }
-  const outboundProxy = normalizeOutboundProxy(payload?.outboundProxy);
-  if (!SUPPORTED_OUTBOUND_PROXY_MODES.has(outboundProxy.mode)) {
-    return "外网出口代理模式仅支持 configured、system 或 direct";
-  }
-  if (outboundProxy.mode === "configured" && outboundProxy.enabled && !normalizeProxyURL(outboundProxy.url, "")) {
-    return "外网出口代理地址仅支持 http、https 或 socks5";
   }
   return "";
 }
@@ -577,22 +535,8 @@ function loadCachedState() {
   }
 }
 
-/**
- * 将配置文件、Wails 返回值或页面状态统一归一化为前端内部配置结构。
- * @param {Object} source 配置文件、缓存或响应中的原始配置对象。
- * @returns {Object} 返回可直接用于页面状态和保存请求的配置对象。
- */
 function normalizeConfig(source) {
   const raw = source && typeof source === "object" ? source : {};
-  const routing = raw.routing && typeof raw.routing === "object" ? raw.routing : {};
-  // lyh用cursor修改 2026-07-27：兼容页面状态字段，避免配置窗口刷新后丢失外网出口代理选择。
-  const outboundProxy = raw.outboundProxy && typeof raw.outboundProxy === "object"
-    ? raw.outboundProxy
-    : {
-      enabled: raw.outboundProxyEnabled,
-      mode: raw.outboundProxyMode,
-      url: raw.outboundProxyURL,
-    };
   const homeMetrics = raw.homeMetrics && typeof raw.homeMetrics === "object" ? raw.homeMetrics : {};
   return {
     log: asBoolean(raw.log),
@@ -600,10 +544,6 @@ function normalizeConfig(source) {
     backendListenAddr: asString(raw.configBackendListenAddr) || asString(raw.backendListenAddr),
     proxyListenAddr: asString(raw.configProxyListenAddr) || asString(raw.proxyListenAddr),
     modelAdapters: normalizeModelAdapters(raw.modelAdapters),
-    routing: {
-      mode: normalizeRouteMode(routing.mode),
-    },
-    outboundProxy: normalizeOutboundProxy(outboundProxy),
     homeMetrics: {
       includeCacheWriteInHitRate: asBoolean(homeMetrics.includeCacheWriteInHitRate),
     },
@@ -646,9 +586,6 @@ function buildConfigPayload(source = appState) {
     backendListenAddr: normalized.backendListenAddr,
     proxyListenAddr: normalized.proxyListenAddr,
     modelAdapters: normalized.modelAdapters.map(({ id, ...adapter }) => adapter),
-    routing: normalized.routing,
-    // lyh用cursor修改 2026-07-27：保存配置时携带外网出口代理策略，确保后端 netproxy 能立即切换到 v2rayN。
-    outboundProxy: normalized.outboundProxy,
     homeMetrics: normalized.homeMetrics,
     lastAgentModelHash: normalized.lastAgentModelHash,
   };
@@ -663,11 +600,6 @@ function applyConfigToState(config, { modelAdaptersOnly = false } = {}) {
   appState.modelAdapters = normalized.modelAdapters;
   appState.configBackendListenAddr = normalized.backendListenAddr;
   appState.configProxyListenAddr = normalized.proxyListenAddr;
-  appState.routingMode = normalized.routing.mode;
-  // lyh用cursor修改 2026-07-27：加载配置时同步外网出口代理页面状态，避免保存时覆盖用户代理选择。
-  appState.outboundProxyEnabled = normalized.outboundProxy.enabled;
-  appState.outboundProxyMode = normalized.outboundProxy.mode;
-  appState.outboundProxyURL = normalized.outboundProxy.url;
   appState.includeCacheWriteInHitRate = normalized.homeMetrics.includeCacheWriteInHitRate;
   return normalized;
 }
@@ -677,14 +609,10 @@ async function loadPersistedUserConfig() {
 }
 
 async function persistConfigPayload(config, { modelAdaptersOnly = false } = {}) {
-  const payload = buildConfigPayload(config);
-  const configValidationError = validateConfigPayload(payload);
-  if (configValidationError) {
-    return {
-      ok: false,
-      error: configValidationError,
-    };
+  if (appState.configSaving) {
+    return { ok: false, error: "已有配置操作正在进行，请稍后再试" };
   }
+  const payload = buildConfigPayload(config);
   const validationError = validateModelAdapters(payload.modelAdapters);
   if (validationError) {
     return {
@@ -712,23 +640,6 @@ async function persistConfigPayload(config, { modelAdaptersOnly = false } = {}) 
   }
 }
 
-// lyh用cursor修改 2026-08-01：将系统启动项响应统一映射为界面状态，确保开关始终展示后端实际结果。
-/**
- * 应用后端返回的开机启动状态。
- * @param {Object} source 后端返回的平台支持状态和实际启用状态。
- * @returns {{supported: boolean, enabled: boolean}} 返回归一化后的开机启动状态。
- */
-function applyStartupStatus(source) {
-  const status = source && typeof source === "object" ? source : {};
-  const normalized = {
-    supported: asBoolean(status.supported),
-    enabled: asBoolean(status.enabled),
-  };
-  appState.startupSupported = normalized.supported;
-  appState.startupEnabled = normalized.enabled;
-  return normalized;
-}
-
 function applyProxyState(raw) {
   const state = raw && typeof raw === "object" ? raw : {};
   appState.backendRunning = asBoolean(state.backendRunning);
@@ -743,10 +654,8 @@ function applyProxyState(raw) {
   appState.netProxyActive = asBoolean(state.netProxyActive);
   appState.netProxyUsingSystem = asBoolean(state.netProxyUsingSystem);
   appState.netProxyUsingEnv = asBoolean(state.netProxyUsingEnv);
-  appState.netProxyUsingConfigured = asBoolean(state.netProxyUsingConfigured);
   appState.netProxyHttp = asString(state.netProxyHttp);
   appState.netProxyHttps = asString(state.netProxyHttps);
-  appState.netProxyConfiguredURL = asString(state.netProxyConfiguredURL);
   appState.netProxyPacIgnored = asBoolean(state.netProxyPacIgnored);
   appState.netProxyDescription = asString(state.netProxyDescription);
 }
@@ -784,6 +693,120 @@ function handleModelAdapterTestUpdatedEvent(event) {
   void refreshModelAdapterTestResults().catch(() => {});
 }
 
+function normalizeUpdateState(value) {
+  const text = asString(value).toLowerCase();
+  if (["idle", "checking", "downloading", "ready", "installing", "error"].includes(text)) {
+    return text;
+  }
+  return "idle";
+}
+
+function applyUpdateSnapshot(raw) {
+  const data = raw && typeof raw === "object" ? raw : {};
+  const nextState = normalizeUpdateState(data.state ?? appState.updateState);
+  appState.updateState = nextState;
+
+  const version = asString(data.version);
+  if (version) {
+    appState.updateVersion = version;
+  } else if (nextState === "idle") {
+    appState.updateVersion = "";
+  }
+
+  const releaseDate = asString(data.releaseDate);
+  if (releaseDate) {
+    appState.updateReleaseDate = releaseDate;
+  } else if (nextState === "idle") {
+    appState.updateReleaseDate = "";
+  }
+
+  if (typeof data.releaseNotes === "string") {
+    appState.updateReleaseNotes = data.releaseNotes.replace(/\r\n/g, "\n");
+  } else if (nextState === "idle") {
+    appState.updateReleaseNotes = "";
+  }
+
+  if (typeof data.error === "string") {
+    appState.updateError = data.error.trim();
+  } else if (nextState !== "error") {
+    appState.updateError = "";
+  }
+
+  if (typeof data.message === "string") {
+    appState.updateMessage = data.message.trim();
+  } else if (!data.prompt) {
+    appState.updateMessage = "";
+  }
+
+  if (typeof data.downloaded === "number") {
+    appState.updateProgressDownloaded = data.downloaded;
+  } else if (nextState !== "downloading") {
+    appState.updateProgressDownloaded = 0;
+  }
+
+  if (typeof data.total === "number") {
+    appState.updateProgressTotal = data.total;
+  } else if (nextState !== "downloading") {
+    appState.updateProgressTotal = 0;
+  }
+
+  if (typeof data.percentage === "number") {
+    appState.updateProgressPercent = Math.max(0, Math.min(100, data.percentage));
+  } else if (nextState !== "downloading") {
+    appState.updateProgressPercent = 0;
+  }
+}
+
+function openUpdatePrompt(kind, payload = {}) {
+  appState.updatePromptKind = asString(kind) || "idle";
+  appState.updatePromptVisible = true;
+  appState.updatePromptBusy = false;
+  if (typeof payload.message === "string") {
+    appState.updateMessage = payload.message.trim();
+  }
+  if (typeof payload.error === "string") {
+    appState.updateError = payload.error.trim();
+  }
+}
+
+function handleUpdateStateEvent(event) {
+  const data = event?.data && typeof event.data === "object" ? event.data : {};
+  applyUpdateSnapshot(data);
+  if (asBoolean(data.prompt)) {
+    openUpdatePrompt(asString(data.promptKind) || "idle", data);
+  }
+}
+
+function handleUpdateProgressEvent(event) {
+  const data = event?.data && typeof event.data === "object" ? event.data : {};
+  applyUpdateSnapshot({
+    ...data,
+    state: "downloading",
+  });
+}
+
+function handleUpdateReadyEvent(event) {
+  const data = event?.data && typeof event.data === "object" ? event.data : {};
+  applyUpdateSnapshot({
+    ...data,
+    state: "ready",
+  });
+  if (data.prompt !== false) {
+    openUpdatePrompt("ready", data);
+  }
+}
+
+function handleUpdateErrorEvent(event) {
+  const data = event?.data && typeof event.data === "object" ? event.data : {};
+  applyUpdateSnapshot({
+    ...data,
+    state: "error",
+  });
+  if (asBoolean(data.prompt)) {
+    openUpdatePrompt("error", data);
+  }
+}
+
 function extractErrorMessage(error) {
   if (typeof error === "string") {
     return error.trim();
@@ -799,18 +822,10 @@ const cachedConfig = normalizeConfig(cachedState);
 
 export const appState = reactive({
   appVersion: "",
-  // lyh用cursor修改 2026-08-01：单独保存系统启动项运行态，不将平台状态混入用户业务配置。
-  startupSupported: false,
-  startupEnabled: false,
-  startupBusy: true,
   modelAdapters: cachedConfig.modelAdapters,
   modelAdapterTestResults: {},
   configBackendListenAddr: cachedConfig.backendListenAddr,
   configProxyListenAddr: cachedConfig.proxyListenAddr,
-  routingMode: cachedConfig.routing.mode,
-  outboundProxyEnabled: cachedConfig.outboundProxy.enabled,
-  outboundProxyMode: cachedConfig.outboundProxy.mode,
-  outboundProxyURL: cachedConfig.outboundProxy.url,
   includeCacheWriteInHitRate: cachedConfig.homeMetrics.includeCacheWriteInHitRate,
 
   serviceRunning: asBoolean(cachedState.serviceRunning),
@@ -826,10 +841,8 @@ export const appState = reactive({
   netProxyActive: asBoolean(cachedState.netProxyActive),
   netProxyUsingSystem: asBoolean(cachedState.netProxyUsingSystem),
   netProxyUsingEnv: asBoolean(cachedState.netProxyUsingEnv),
-  netProxyUsingConfigured: asBoolean(cachedState.netProxyUsingConfigured),
   netProxyHttp: asString(cachedState.netProxyHttp),
   netProxyHttps: asString(cachedState.netProxyHttps),
-  netProxyConfiguredURL: asString(cachedState.netProxyConfiguredURL),
   netProxyPacIgnored: asBoolean(cachedState.netProxyPacIgnored),
   netProxyDescription: asString(cachedState.netProxyDescription),
 
@@ -837,6 +850,19 @@ export const appState = reactive({
   homeMetrics: createEmptyHomeMetrics(),
   homeMetricsLoading: false,
   homeMetricsError: "",
+
+  updateState: "idle",
+  updateVersion: "",
+  updateReleaseDate: "",
+  updateReleaseNotes: "",
+  updateProgressDownloaded: 0,
+  updateProgressTotal: 0,
+  updateProgressPercent: 0,
+  updateError: "",
+  updateMessage: "",
+  updatePromptVisible: false,
+  updatePromptKind: "idle",
+  updatePromptBusy: false,
 });
 
 watchSyncEffect(() => {
@@ -862,10 +888,8 @@ watchSyncEffect(() => {
         netProxyActive: appState.netProxyActive,
         netProxyUsingSystem: appState.netProxyUsingSystem,
         netProxyUsingEnv: appState.netProxyUsingEnv,
-        netProxyUsingConfigured: appState.netProxyUsingConfigured,
         netProxyHttp: appState.netProxyHttp,
         netProxyHttps: appState.netProxyHttps,
-        netProxyConfiguredURL: appState.netProxyConfiguredURL,
         netProxyPacIgnored: appState.netProxyPacIgnored,
         netProxyDescription: appState.netProxyDescription,
       }),
@@ -905,6 +929,46 @@ watchSyncEffect((onCleanup) => {
   });
 });
 
+watchSyncEffect((onCleanup) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const unsubscribe = Events.On(UPDATE_STATE_EVENT, handleUpdateStateEvent);
+  onCleanup(() => {
+    unsubscribe();
+  });
+});
+
+watchSyncEffect((onCleanup) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const unsubscribe = Events.On(UPDATE_PROGRESS_EVENT, handleUpdateProgressEvent);
+  onCleanup(() => {
+    unsubscribe();
+  });
+});
+
+watchSyncEffect((onCleanup) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const unsubscribe = Events.On(UPDATE_READY_EVENT, handleUpdateReadyEvent);
+  onCleanup(() => {
+    unsubscribe();
+  });
+});
+
+watchSyncEffect((onCleanup) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const unsubscribe = Events.On(UPDATE_ERROR_EVENT, handleUpdateErrorEvent);
+  onCleanup(() => {
+    unsubscribe();
+  });
+});
+
 export const appViewState = reactive({
   serviceStatusText: computed(() => {
     if (appState.proxyRunning && appState.backendRunning) {
@@ -924,6 +988,72 @@ export const appViewState = reactive({
     }
     return appState.serviceRunning ? "关闭服务" : "启动服务";
   }),
+});
+
+function localizeUpdateMessage(msg) {
+  if (!msg) return "";
+  if (/当前已是最新版本/.test(msg)) {
+    const match = msg.match(/v?([0-9]+\.[0-9]+\.[0-9]+)/);
+    const version = match ? match[1] : appState.appVersion || "...";
+    return `当前已是最新版本（v${version}）。`;
+  }
+  return msg;
+}
+
+function localizeReadyContent() {
+  const version = appState.updateVersion || appState.appVersion || "...";
+  const date = formatReleaseDate(appState.updateReleaseDate);
+  const notes = appState.updateReleaseNotes || "";
+
+  return [
+    `版本：v${version}`,
+    `发布时间：${date}`,
+    "",
+    notes || "无更新说明",
+  ].join("\n");
+}
+
+export const updateViewState = reactive({
+  footerDownloading: computed(() => appState.updateState === "downloading"),
+  footerBusy: computed(() => ["checking", "installing"].includes(appState.updateState)),
+  footerVersionLabel: computed(() => `v${appState.appVersion || "..."}`),
+  footerProgressText: computed(() => `${Math.round(appState.updateProgressPercent || 0)}%`),
+  footerProgressStyle: computed(() => ({
+    width: `${Math.max(0, Math.min(100, appState.updateProgressPercent || 0))}%`,
+  })),
+  promptTitle: computed(() => {
+    switch (appState.updatePromptKind) {
+      case "ready":
+        return "发现新版本";
+      case "error":
+        return "更新失败";
+      default:
+        return "检查更新";
+    }
+  }),
+  promptContent: computed(() => {
+    switch (appState.updatePromptKind) {
+      case "ready":
+        return localizeReadyContent();
+      case "error":
+        return appState.updateError || localizeUpdateMessage(appState.updateMessage) || GENERIC_SERVICE_ERROR;
+      default:
+        return localizeUpdateMessage(appState.updateMessage) || localizeUpdateMessage(`当前已是最新版本（v${appState.appVersion || "..."}）。`);
+    }
+  }),
+  promptConfirmText: computed(() => {
+    if (appState.updatePromptKind === "ready") {
+      return "立即重启更新";
+    }
+    return "确定";
+  }),
+  promptCancelText: computed(() => {
+    if (appState.updatePromptKind === "ready") {
+      return "稍后";
+    }
+    return "取消";
+  }),
+  promptShowCancel: computed(() => appState.updatePromptKind === "ready"),
 });
 
 export function getModelAdapterTestResultByID(adapterID) {
@@ -962,6 +1092,10 @@ export async function refreshModelAdapterTestResults() {
 
 export function startModelAdapterTest(adapter) {
   const normalized = normalizeModelAdapter(adapter);
+  const validationError = validateModelAdapters([normalized]);
+  if (validationError) {
+    return Promise.reject(new Error(validationError));
+  }
   return testModelAdapter(normalized).then((rawResult) => {
     const result = normalizeModelAdapterTestResult(rawResult);
     if (result.adapterID) {
@@ -983,14 +1117,6 @@ export async function persistUserConfig() {
   return persistConfigPayload({
     ...currentConfig,
     modelAdapters: normalizeModelAdapters(appState.modelAdapters),
-    routing: {
-      mode: appState.routingMode,
-    },
-    outboundProxy: {
-      enabled: appState.outboundProxyEnabled,
-      mode: appState.outboundProxyMode,
-      url: appState.outboundProxyURL,
-    },
     homeMetrics: {
       ...currentConfig.homeMetrics,
       includeCacheWriteInHitRate: appState.includeCacheWriteInHitRate,
@@ -998,33 +1124,25 @@ export async function persistUserConfig() {
   });
 }
 
-// lyh用cursor修改 2026-07-27：提供主界面出口代理保存入口，让用户无需打开配置窗口即可修改 v2rayN 端口。
-/**
- * 保存主界面编辑的外网出口代理配置。
- * @param {{enabled?: boolean, mode?: string, url?: string}} outboundProxy 用户在主界面选择的出口代理策略。
- * @returns {Promise<{ok: boolean, error: string}>} 返回保存结果；失败时包含可展示给用户的错误信息。
- */
-export async function saveOutboundProxyConfig(outboundProxy) {
-  const currentConfig = await loadPersistedUserConfig();
-  const previousProxy = {
-    enabled: appState.outboundProxyEnabled,
-    mode: appState.outboundProxyMode,
-    url: appState.outboundProxyURL,
-  };
-  const nextProxy = normalizeOutboundProxy(outboundProxy);
-  appState.outboundProxyEnabled = nextProxy.enabled;
-  appState.outboundProxyMode = nextProxy.mode;
-  appState.outboundProxyURL = nextProxy.url;
-  const result = await persistConfigPayload({
-    ...currentConfig,
-    outboundProxy: nextProxy,
-  });
-  if (!result.ok) {
-    appState.outboundProxyEnabled = previousProxy.enabled;
-    appState.outboundProxyMode = previousProxy.mode;
-    appState.outboundProxyURL = previousProxy.url;
+export async function exportUserConfigToFile(path) {
+  return exportUserConfigFile(path);
+}
+
+export async function importUserConfigFromFile(path) {
+  if (appState.serviceRunning || appState.backendRunning || appState.proxyRunning) {
+    throw new Error("服务运行中不能导入完整配置，请先停止服务");
   }
-  return result;
+  if (appState.configSaving) {
+    throw new Error("已有配置操作正在进行，请稍后再试");
+  }
+  appState.configSaving = true;
+  try {
+    const imported = normalizeConfig(await importUserConfigFile(path));
+    applyConfigToState(imported);
+    return imported;
+  } finally {
+    appState.configSaving = false;
+  }
 }
 
 export async function saveIncludeCacheWriteInHitRate(value) {
@@ -1043,16 +1161,6 @@ export async function saveIncludeCacheWriteInHitRate(value) {
     appState.includeCacheWriteInHitRate = previousValue;
   }
   return result;
-}
-
-export async function saveRoutingMode(mode) {
-  const currentConfig = await loadPersistedUserConfig();
-  return persistConfigPayload({
-    ...currentConfig,
-    routing: {
-      mode: normalizeRouteMode(mode),
-    },
-  });
 }
 
 export async function reloadUserConfig(options = {}) {
@@ -1090,6 +1198,13 @@ export async function saveModelAdapterAt(index, adapter) {
   };
 }
 
+export async function fetchAvailableModelIDs(payload) {
+  const result = await fetchModelAdapterModels(payload);
+  return asArray(result?.models)
+    .map((item) => asString(item))
+    .filter(Boolean);
+}
+
 export async function deleteModelAdapterAt(index) {
   const currentConfig = await loadPersistedUserConfig();
   const nextAdapters = normalizeModelAdapters(currentConfig.modelAdapters);
@@ -1103,6 +1218,39 @@ export async function deleteModelAdapterAt(index) {
 
   nextAdapters.splice(index, 1);
 
+  return persistConfigPayload(
+    {
+      ...currentConfig,
+      modelAdapters: nextAdapters,
+    },
+    { modelAdaptersOnly: true },
+  );
+}
+
+export async function saveModelAdapterOrder(adapterIDs) {
+  const orderedIDs = asArray(adapterIDs)
+    .map((item) => asString(item))
+    .filter(Boolean);
+  const currentConfig = await loadPersistedUserConfig();
+  const currentAdapters = normalizeModelAdapters(currentConfig.modelAdapters);
+  const adaptersByID = new Map(currentAdapters.map((adapter) => [adapter.id, adapter]));
+  const uniqueIDs = new Set(orderedIDs);
+
+  if (
+    orderedIDs.length !== currentAdapters.length
+    || uniqueIDs.size !== currentAdapters.length
+    || orderedIDs.some((id) => !adaptersByID.has(id))
+  ) {
+    return {
+      ok: false,
+      error: "模型配置已发生变化，请刷新后重试",
+    };
+  }
+
+  const nextAdapters = orderedIDs.map((id, index) => ({
+    ...adaptersByID.get(id),
+    sort: index + 1,
+  }));
   return persistConfigPayload(
     {
       ...currentConfig,
@@ -1243,41 +1391,6 @@ export async function toggleService() {
   return startService();
 }
 
-// lyh用cursor修改 2026-08-01：初始化时读取操作系统启动项，避免依赖可能过期的本地页面缓存。
-/**
- * 从桌面后端同步当前程序的开机启动状态。
- * @returns {Promise<{supported: boolean, enabled: boolean}>} 返回操作系统中的实际状态。
- */
-export async function syncStartupStatus() {
-  appState.startupBusy = true;
-  try {
-    return applyStartupStatus(await getStartupStatus());
-  } finally {
-    appState.startupBusy = false;
-  }
-}
-
-// lyh用cursor修改 2026-08-01：切换后采用后端返回状态更新界面，失败时保留原状态并交由页面提示。
-/**
- * 添加或删除当前程序的开机启动项。
- * @param {boolean} enabled 用户期望的开机启动状态。
- * @returns {Promise<{ok: boolean, error: string}>} 返回切换结果，失败时包含可展示的错误信息。
- */
-export async function updateStartupEnabled(enabled) {
-  if (appState.startupBusy) {
-    return { ok: false, error: "开机启动状态更新中，请稍后再试" };
-  }
-  appState.startupBusy = true;
-  try {
-    applyStartupStatus(await persistStartupEnabled(asBoolean(enabled)));
-    return { ok: true, error: "" };
-  } catch (error) {
-    return { ok: false, error: toUserError(error) };
-  } finally {
-    appState.startupBusy = false;
-  }
-}
-
 export async function openLocalLogsDirectory() {
   await openLogsDirectory();
 }
@@ -1290,9 +1403,32 @@ export async function openModelConfigWindow() {
   await openModelConfig();
 }
 
-export async function openModelEditorWindow(index, adapter) {
-  const adapterJSON = JSON.stringify(normalizeModelAdapter(adapter));
-  await openModelEditor(index, adapterJSON);
+export async function checkForAppUpdates() {
+  await checkForUpdates();
+}
+
+export function dismissUpdatePrompt() {
+  appState.updatePromptVisible = false;
+  appState.updatePromptBusy = false;
+}
+
+export async function confirmUpdatePrompt() {
+  if (appState.updatePromptKind !== "ready") {
+    dismissUpdatePrompt();
+    return;
+  }
+  if (appState.updatePromptBusy) {
+    return;
+  }
+  appState.updatePromptBusy = true;
+  try {
+    await installReadyUpdate();
+  } catch (error) {
+    appState.updatePromptBusy = false;
+    const message = toUserError(error);
+    appState.updateError = message;
+    openUpdatePrompt("error", { error: message });
+  }
 }
 
 export function toUserError(error) {
@@ -1300,11 +1436,6 @@ export function toUserError(error) {
   return message || GENERIC_SERVICE_ERROR;
 }
 
-// lyh用cursor修改 2026-08-01：应用初始化时同步开机启动状态，使主界面开关反映 Windows 注册表实际值。
-/**
- * 初始化主界面依赖的配置、服务、指标及操作系统状态。
- * 单项读取失败时保留其他功能可用，不阻塞应用界面启动。
- */
 export async function bootstrapAppState() {
   try {
     await reloadUserConfig();
@@ -1318,6 +1449,5 @@ export async function bootstrapAppState() {
     appState.appVersion = "";
   }
   await syncServiceState().catch(() => {});
-  await syncStartupStatus().catch(() => {});
   await syncHomeMetrics().catch(() => {});
 }

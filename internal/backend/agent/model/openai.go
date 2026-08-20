@@ -49,7 +49,8 @@ type openAIResponsesRequestBody struct {
 }
 
 type openAIResponsesReasoning struct {
-	Effort string `json:"effort,omitempty"`
+	Effort  string `json:"effort,omitempty"`
+	Summary string `json:"summary,omitempty"`
 }
 
 type openAIToolAccumulator struct {
@@ -839,7 +840,7 @@ func (adapter *OpenAIAdapter) streamChatCompletions(ctx context.Context, req Str
 			}
 		}
 
-		if choice.FinishReason != nil {
+		if choice.FinishReason != nil && strings.TrimSpace(*choice.FinishReason) != "" {
 			if err := flushTaggedContentTail(); err != nil {
 				return fail(err)
 			}
@@ -944,7 +945,7 @@ func (adapter *OpenAIAdapter) streamResponses(ctx context.Context, req StreamReq
 			requestBody.Tools = tools
 		}
 		if effort := strings.TrimSpace(req.ReasoningEffort); effort != "" {
-			requestBody.Reasoning = &openAIResponsesReasoning{Effort: effort}
+			requestBody.Reasoning = &openAIResponsesReasoning{Effort: effort, Summary: "auto"}
 			requestBody.Include = []string{"reasoning.encrypted_content"}
 		}
 		body = requestBody
@@ -1903,11 +1904,13 @@ func openAIThinkingDisableKind(baseURL string, modelID string, endpoint string) 
 		strings.Contains(base, "zhipu") ||
 		strings.Contains(base, "xiaomimimo") ||
 		strings.Contains(base, "mimo") ||
+		strings.Contains(base, "minimax") ||
 		strings.Contains(model, "deepseek") ||
 		strings.Contains(model, "glm") ||
 		strings.Contains(model, "zai") ||
 		strings.Contains(model, "zhipu") ||
-		strings.Contains(model, "mimo"):
+		strings.Contains(model, "mimo") ||
+		strings.Contains(model, "minimax"):
 		return "thinking_type"
 	case openAIModelSupportsReasoningNone(model):
 		return "reasoning_none"
@@ -1953,6 +1956,7 @@ func normalizeOpenAIResponsesInput(messages []Message) (string, []map[string]any
 	instructionParts := make([]string, 0, 2)
 	items := make([]map[string]any, 0, len(messages))
 	responsesCallIDs := make(map[string]string)
+	emittedCallIDs := make(map[string]struct{})
 	activeAssistantReasoningKey := ""
 	for _, message := range messages {
 		role := strings.TrimSpace(message.Role)
@@ -1965,10 +1969,38 @@ func normalizeOpenAIResponsesInput(messages []Message) (string, []map[string]any
 		}
 		if role == "tool" && strings.TrimSpace(message.ToolCallID) != "" {
 			callID := openAIResponsesToolMessageCallID(message, responsesCallIDs)
+			if strings.TrimSpace(callID) != "" {
+				if _, ok := emittedCallIDs[callID]; !ok {
+					// 历史损坏时可能出现没有配对 function_call 的工具结果
+					// （例如旧版本回放逻辑剥离了 assistant 调用但保留了结果）。
+					// Responses API 会直接拒绝这种 input，这里补一个占位 function_call
+					// 让旧会话可以继续；无法补齐时丢弃该结果。
+					if name := strings.TrimSpace(message.Name); name != "" {
+						items = append(items, map[string]any{
+							"type":      "function_call",
+							"call_id":   callID,
+							"name":      name,
+							"arguments": "{}",
+							"status":    "completed",
+						})
+						emittedCallIDs[callID] = struct{}{}
+					} else {
+						continue
+					}
+				}
+			}
+			var output any = openAIResponsesMessageText(message)
+			if hasImageContentParts(message.ContentParts) {
+				content, err := openAIResponsesMessageContent(message, false)
+				if err != nil {
+					return "", nil, err
+				}
+				output = content
+			}
 			items = append(items, map[string]any{
 				"type":    "function_call_output",
 				"call_id": callID,
-				"output":  openAIResponsesMessageText(message),
+				"output":  output,
 			})
 			activeAssistantReasoningKey = ""
 			continue
@@ -2023,6 +2055,9 @@ func normalizeOpenAIResponsesInput(messages []Message) (string, []map[string]any
 					toolItem["status"] = "completed"
 				}
 				items = append(items, toolItem)
+				if strings.TrimSpace(callID) != "" {
+					emittedCallIDs[strings.TrimSpace(callID)] = struct{}{}
+				}
 			}
 		}
 	}

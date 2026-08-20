@@ -60,6 +60,8 @@ type ProxyState struct {
 // 启动前会先应用当前出口代理配置，确保 Cursor 首次外网请求走用户选择的出口。
 // 返回启动后的服务状态；任一关键步骤失败时返回失败状态和具体错误。
 func (s *ProxyService) StartProxy() (ProxyState, error) {
+	s.lifecycleMu.Lock()
+	defer s.lifecycleMu.Unlock()
 	logger.Infof("start service requested config_path=%s logs_root=%s", s.configPath, s.logsRoot)
 	fail := func(step string, err error) (ProxyState, error) {
 		logger.Errorf("start service failed step=%s err=%v", step, err)
@@ -135,6 +137,8 @@ func (s *ProxyService) StartProxy() (ProxyState, error) {
 
 // StopProxy 用于处理与 StopProxy 相关的逻辑。
 func (s *ProxyService) StopProxy() (ProxyState, error) {
+	s.lifecycleMu.Lock()
+	defer s.lifecycleMu.Unlock()
 	logger.Infof("stop service requested")
 	fail := func(step string, err error) (ProxyState, error) {
 		logger.Errorf("stop service failed step=%s err=%v", step, err)
@@ -275,6 +279,9 @@ func (s *ProxyService) ShutdownForQuit() {
 		if err := s.backendHost.Stop(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			finalErr = errors.Join(finalErr, err)
 		}
+	}
+	if s.cursorAccount != nil {
+		s.cursorAccount.Shutdown()
 	}
 	if finalErr != nil {
 		s.setLastError(finalErr)

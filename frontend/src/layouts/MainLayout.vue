@@ -1,11 +1,12 @@
 <script setup>
-import { Window } from "@wailsio/runtime";
+import { Browser, Window } from "@wailsio/runtime";
 import LocaleSelect from "@/components/LocaleSelect.vue";
-import { showModal } from "@/composables/useModal";
-import { openUpstreamReleases } from "@/services/clientApi";
+import { useMessage } from "@/composables/useMessage";
 import {
   appState,
+  checkForAppUpdates,
   syncServiceState,
+  updateViewState,
 } from "@/state/appState";
 import { isWindows } from "@/utils/isWindows";
 import { computed, onMounted, onUnmounted } from "vue";
@@ -13,10 +14,14 @@ import { useRoute } from "vue-router";
 import Logo from "@/assets/logo.png";
 
 const route = useRoute();
+const message = useMessage();
 const showIcon = computed(() => route.meta.showIcon !== false);
 const title = computed(() => route.meta.title ?? "Cursor助手｜永久免费｜自定义API");
 const directlyClose = computed(() => route.meta.directlyClose === true);
 const showFooter = computed(() => route.path === "/");
+const AUTHOR_REPOSITORY_URL = "https://github.com/leookun/cursor-byok";
+const AUTHOR_LABEL = "@leookun";
+const usageDocsURL = "https://docs.leokun.cn";
 let proxyStateTimer = null;
 const proxyStatePollIntervalMs = 10000;
 const netProxyEndpoint = computed(
@@ -65,21 +70,39 @@ async function closeWindow() {
   await Window.Hide();
 }
 
-async function handleOpenUpstreamReleases() {
+async function handleCheckForUpdates() {
+  if (updateViewState.footerBusy || updateViewState.footerDownloading) {
+    return;
+  }
+  const loadingMessageID = message("检查更新中...", { duration: 0 });
   try {
-    await openUpstreamReleases();
-  } catch (error) {
-    await showActionError("打开上游发布页失败", error);
+    await checkForAppUpdates();
+  } finally {
+    if (loadingMessageID) {
+      message.remove(loadingMessageID);
+    }
   }
 }
 
-async function showActionError(title, error) {
-  await showModal({
-    title,
-    content: String(error || "操作失败").trim() || "操作失败",
-    confirmText: "确定",
-    showCancel: false,
-  });
+function showActionError(title, error) {
+  const detail = String(error || "操作失败").trim() || "操作失败";
+  message(`${title}：${detail}`);
+}
+
+async function handleOpenAuthorHome() {
+  try {
+    await Browser.OpenURL(AUTHOR_REPOSITORY_URL);
+  } catch (error) {
+    showActionError("打开作者地址失败", error);
+  }
+}
+
+async function handleOpenUsageDocs() {
+  try {
+    await Browser.OpenURL(usageDocsURL);
+  } catch (error) {
+    showActionError("打开使用教程失败", error);
+  }
 }
 
 onMounted(() => {
@@ -111,7 +134,7 @@ onUnmounted(() => {
       :class="{ '!justify-center': !isWindows }"
     >
       <div class="center-row gap-2" style="font-family: var(--font-num);">
-        <img v-if="showIcon" :src="Logo" class="w-[18px] h-[18px]" />
+        <!-- <img v-if="showIcon" :src="Logo" class="w-[18px] h-[18px]" /> -->
         <div>{{ title }}</div>
       </div>
       <div
@@ -139,27 +162,61 @@ onUnmounted(() => {
 
     <footer
       v-if="showFooter"
-      class="flex !pr-1 h-[30px] shrink-0 items-center gap-[8px] border-t border-[#242424] px-[14px] text-[12px] text-[#8f8f8f]"
+      class="flex !pr-1 h-[30px] shrink-0 items-center gap-[8px]  px-[14px] text-[12px] text-[#8f8f8f]"
     >
       <div
         v-if="proxyBadgeText"
-        class="center-row gap-[2px] border-none px-[0px] py-[3px] leading-none"
-        :title="proxyBadgeTitle"
+        class="center-row  border-none gap-[2px]  border-none  px-[0px] py-[3px] leading-none "
         aria-live="polite"
       >
         <span class="icon-[mdi--wifi] text-[15px]"></span>
         <span class="truncate">{{ proxyBadgeText }}</span>
       </div>
-      <span class="shrink-0">v{{ appState.appVersion || "..." }}</span>
+      <button
+        v-if="!updateViewState.footerDownloading"
+        type="button"
+        class="center-row shrink-0 gap-[6px] cursor-pointer rounded-[6px] px-[6px] py-[3px] transition-colors duration-150 hover:bg-[#1f1f1f] hover:text-[#e5e5e5]"
+        :disabled="updateViewState.footerBusy"
+        @click="handleCheckForUpdates"
+      >
+        <span>{{ updateViewState.footerVersionLabel }}</span>
+        <span>检查更新</span>
+      </button>
       <button
         type="button"
-        class="center-row shrink-0 gap-[4px] cursor-pointer rounded-[6px] px-[6px] py-[3px] transition-colors duration-150 hover:bg-[#1f1f1f] hover:text-[#e5e5e5]"
-        @click="handleOpenUpstreamReleases"
+        class="center-row shrink-0 gap-[2px]  cursor-pointer rounded-[6px] px-[6px] py-[3px] transition-colors duration-150 hover:bg-[#1f1f1f] hover:text-[#e5e5e5]"
+        @click="handleOpenUsageDocs"
       >
-        <span class="icon-[mdi--open-in-new] text-[14px]"></span>
-        <span>查看上游更新</span>
+        <span class="icon-[mdi--file-document-outline] text-[15px]"></span>
+        <span>使用教程</span>
       </button>
-      <span class="shrink-0">作者 yhfx186</span>
+      <button
+        type="button"
+        class="center-row shrink-0 gap-[6px] cursor-pointer rounded-[6px] px-[6px] py-[3px] transition-colors duration-150 hover:bg-[#1f1f1f] hover:text-[#e5e5e5]"
+        @click="handleOpenAuthorHome"
+      >
+        <span class="icon-[mdi--github] text-[14px]"></span>
+        <span>{{ AUTHOR_LABEL }}</span>
+      </button>
+      <div
+        v-if="updateViewState.footerDownloading"
+        class="flex min-w-0 flex-1 items-center gap-[10px]"
+      >
+        <span class="shrink-0">{{ updateViewState.footerVersionLabel }}</span>
+        <div class="center-row min-w-0 gap-[8px]">
+          <div
+            class="h-[6px] w-[120px] overflow-hidden rounded-full bg-[#1f1f1f]"
+          >
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-[#10AD5D] to-[#29c776]"
+              :style="updateViewState.footerProgressStyle"
+            ></div>
+          </div>
+          <span class="shrink-0 text-[#d4d4d4]">{{
+            updateViewState.footerProgressText
+          }}</span>
+        </div>
+      </div>
       <div class="ml-auto flex shrink-0 items-center gap-[8px]">
         <LocaleSelect
           :border="false"
