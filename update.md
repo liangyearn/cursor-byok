@@ -1,3 +1,19 @@
+# 2026-08-20 GitHub 账号更名同步
+
+## 修改内容
+
+- `internal/buildinfo/buildinfo.go`：将 `ReleaseRepo`、`UpdateBaseURL`、`ReleasePageURL` 从 `helenwilkerson` 改为 `liangyearn`，确保应用内更新器从本人新账号拉取发布产物，不依赖旧用户名重定向。
+- `Taskfile.yml`：将 `RELEASE_REPO` 改为 `liangyearn/cursor-byok`，保持发布任务目标仓库与更新器来源一致。
+- `frontend/src/layouts/MainLayout.vue`：将页脚作者仓库链接改为新账号地址，避免界面入口跳转到旧用户名。
+
+## 验证结果
+
+- `编译`：成功。`go build ./...` 通过；`yarn build` 通过，114 个模块转换成功。
+- `测试`：通过。`go test ./internal/updater/... ./internal/buildinfo/... ./internal/app/...` 通过。
+- `静态检查`：通过。修改文件无新增 linter 诊断；全仓搜索确认已无 `helenwilkerson` 残留。
+
+说明：`upstream` 远端与 README 中的 `leookun` 链接属于上游地址，未改动；`yhfx186` 为品牌署名，与 GitHub 用户名无关，保持原样。`origin` 远端地址仍指向旧用户名，属于 git 配置变更，未在未授权情况下执行。
+
 # 2026-08-20 手工回归完成
 
 ## 修改内容

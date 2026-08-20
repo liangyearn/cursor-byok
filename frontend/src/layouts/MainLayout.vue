@@ -19,7 +19,8 @@ const showIcon = computed(() => route.meta.showIcon !== false);
 const title = computed(() => route.meta.title ?? "Cursor助手｜永久免费｜自定义API");
 const directlyClose = computed(() => route.meta.directlyClose === true);
 const showFooter = computed(() => route.path === "/");
-const AUTHOR_REPOSITORY_URL = "https://github.com/helenwilkerson/cursor-byok";
+// lyh用cursor修改 2026-08-20：GitHub 账号更名为 liangyearn，页脚作者仓库入口同步更新，避免跳转到旧用户名地址。
+const AUTHOR_REPOSITORY_URL = "https://github.com/liangyearn/cursor-byok";
 const AUTHOR_LABEL = "@yhfx186";
 const usageDocsURL = "https://docs.leokun.cn";
 let proxyStateTimer = null;

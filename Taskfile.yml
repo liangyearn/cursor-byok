@@ -12,7 +12,8 @@ vars:
   APP_VERSION:
     sh: 'go run ./scripts/release version -config ./build/config.yml'
   # lyh用cursor修改 2026-08-19：发布任务必须与应用内更新器使用同一个 fork 仓库。
-  RELEASE_REPO: "helenwilkerson/cursor-byok"
+  # lyh用cursor修改 2026-08-20：GitHub 账号更名为 liangyearn，发布目标仓库同步更新，保持与 buildinfo 更新源一致。
+  RELEASE_REPO: "liangyearn/cursor-byok"
   RELEASE_BASE_NAME: "cursor-byok"
   RELEASE_SOURCE_PATH: "release-notes.md"
   RELEASE_DIR: '{{.BIN_DIR}}/release/{{.APP_VERSION}}'
